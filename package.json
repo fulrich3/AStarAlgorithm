@@ -4,17 +4,27 @@
   "description": "",
   "private": true,
   "scripts": {
+    "dev": "webpack-dev-server",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prod": "npm run clean && cross-env NODE_ENV=production webpack -p",
+    "clean": "rimraf ./dist/*",
     "build": "webpack"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "cross-env": "^5.2.0",
     "css-loader": "^1.0.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.9.3",
+    "sass-loader": "^7.1.0",
     "style-loader": "^0.23.0",
     "webpack": "^4.0.1",
-    "webpack-cli": "^2.0.9"
+    "webpack-cli": "^2.1.5",
+    "webpack-dev-server": "^3.1.8"
   },
   "dependencies": {}
 }
