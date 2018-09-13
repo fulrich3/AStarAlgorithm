@@ -22,13 +22,9 @@ var cssConfig = isProd ? cssProd : cssDev;
 // ============================
 module.exports = {
     mode: 'development',
-    entry: {
-        app: './src/index.js',
-        contact: './src/contact.js',
-    },
+    entry: './src/index.js',
     output: {
-        //filename: 'app.bundle.js',
-        filename: '[name].bundle.js',
+        filename: 'app.bundle.js',
         path: path.resolve(__dirname, 'dist')
     },
     devServer: {
@@ -46,15 +42,6 @@ module.exports = {
             template: "./src/templates/index.ejs",
             filename: "index.html",
         }),
-        new HtmlWebpackPlugin({
-            title: "Contact",
-            minify: {
-                collapseWhitespace: isProd,
-            },
-            hash: isProd,
-            template: "./src/templates/contact.ejs",
-            filename: "contact.html",
-        }),
         new ExtractTextPlugin({
             filename:'app.bundle.css',
             disable: !isProd,
@@ -62,6 +49,7 @@ module.exports = {
     ],
     module: {
         rules: [
+            // HTML
             {
                 test: /\.(html)$/,
                 use: {
@@ -71,11 +59,21 @@ module.exports = {
                     }
                 }
             },
+            // CSS
             {
                 test:/\.(s*)css$/,
                 use: cssConfig
                 //use:['style-loader','css-loader', 'sass-loader']
             },
+            //TSC
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
         ]
+    },
+    resolve: {
+        extensions: [ '.tsx', '.ts', '.js' ]
     },
 };
