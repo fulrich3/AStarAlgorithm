@@ -1,7 +1,21 @@
 import './style.scss';
 
-import Grid from './classes/Grid.ts';
-//import './classes/Grid.ts';
+import Map from './classes/Map';
 
-var grid = new Grid(10,10);
-grid.createHtmlCanvas();
+var mapConfig = {
+    width: 20,
+    height: 20,
+    draw: true,
+    drawOptions: {
+        cellSize: 40,
+    }
+}
+
+function init(){
+    console.log("loaded");
+    var map = new Map(mapConfig);
+    map.appendHtmlCanvas();
+    map.update();
+}
+
+document.addEventListener("DOMContentLoaded", init, false);
