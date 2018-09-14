@@ -14,7 +14,6 @@ export default class Node {
     gCost:number = 0;
     hCost:number = 0;
     walkable:boolean = true;
-
     cursorHover:boolean = false;
 
     constructor(map:Map,x:number,y:number,walkable:boolean){
@@ -54,16 +53,18 @@ export default class Node {
 
     setWalkable(value:boolean){
         this.walkable = value;
+        this.draw();
     }
 
+    /*
     update(){
-        /*
-        var mouseX = event.clientX;
-        var mouseY = event.clientY;
-        */
+        // this.cursorHover = (this.map.client.mouseX>=this.worldPosition.x && this.map.client.mouseY>=this.worldPosition.y && this.map.client.mouseX<this.worldPosition.x+this.map.cellSize && this.map.client.mouseY<this.worldPosition.y+this.map.cellSize);
+        this.cursorHover = true;
+        console.log("a");
 
         this.draw();
     }
+*/
 
     // Other
     draw(){
@@ -78,7 +79,12 @@ export default class Node {
         // Walkable node
         else{
             ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
-            ctx.fillStyle = "white";
+
+            if(!this.cursorHover)
+                ctx.fillStyle = "white";
+            else
+                ctx.fillStyle = "red";
+
             ctx.fill();
         }
 

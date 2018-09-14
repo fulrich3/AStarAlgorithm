@@ -66,17 +66,18 @@ export default class Map {
     update(){
         console.log("update");
         this.drawHtmlCanvas();
-        //requestAnimationFrame(() => this.update());
     }
 
     drawHtmlCanvas(){
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        for(let x:number=0; x<this.width; x++){
-            for(let y:number=0; y<this.height; y++){
-                let currentNode = this.grid[x][y];
+        for(let y:number=0; y<this.height; y++){
+            for(let x:number=0; x<this.width; x++){
+                let currentNode = this.grid[y][x];
                 currentNode.draw();
             }
         }
+
+        console.log("done");
     }
 }
