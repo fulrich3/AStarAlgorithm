@@ -2,19 +2,19 @@ import Map from './Map';
 //import canvasDrawRectangle from '../utils';
 
 export default class Node {
-    map:Map;
-    gridPosition = {
+    map:Map; // Reference to the parent map
+    gridPosition = { // Position in the grid
         x:0,
         y:0,
     };
-    worldPosition = {
+    worldPosition = { // Position in the world
         x:0,
         y:0,
     };
     gCost:number = 0;
     hCost:number = 0;
     walkable:boolean = true;
-    cursorHover:boolean = false;
+    hover:boolean = false;
 
     constructor(map:Map,x:number,y:number,walkable:boolean){
         this.map = map;
@@ -23,6 +23,10 @@ export default class Node {
         this.worldPosition.x = x * this.map.cellSize;
         this.worldPosition.y = y * this.map.cellSize;
         this.walkable = walkable;
+    }
+
+    consoleLogPositionOnGrid(){
+        console.log("X:"+this.gridPosition.x+" Y:"+this.gridPosition.y);
     }
 
     // Accessors
@@ -42,6 +46,10 @@ export default class Node {
         return this.walkable;
     }
 
+    getHover(){
+        return this.hover;
+    }
+
     // Mutators
     setGCost(value:number){
         this.gCost = value;
@@ -52,45 +60,46 @@ export default class Node {
     }
 
     setWalkable(value:boolean){
-        this.walkable = value;
-        this.draw();
+        if(value == !this.getWalkable()){
+            this.walkable = value;
+            this.consoleLogPositionOnGrid();
+            this.draw();
+        }
     }
 
-    /*
-    update(){
-        // this.cursorHover = (this.map.client.mouseX>=this.worldPosition.x && this.map.client.mouseY>=this.worldPosition.y && this.map.client.mouseX<this.worldPosition.x+this.map.cellSize && this.map.client.mouseY<this.worldPosition.y+this.map.cellSize);
-        this.cursorHover = true;
-        console.log("a");
-
-        this.draw();
+    setHover(value:boolean){
+        // We set it only if it's different from the current one
+        if(value == !this.getHover()){
+            this.hover = value;
+            this.draw();
+        }
     }
-*/
 
     // Other
     draw(){
+        //console.log(this);
+        
         let ctx = this.map.ctx;
+        // Set draw area for the node
+        ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
 
+        // Set color
         // Unwalkable node
-        if(!this.walkable){
-            ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
-            ctx.fillStyle = "black";
-            ctx.fill();
+        if(!this.getWalkable()){
+            ctx.fillStyle = this.map.colorFillSolid;
         }
         // Walkable node
         else{
-            ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
-
-            if(!this.cursorHover)
-                ctx.fillStyle = "white";
-            else
-                ctx.fillStyle = "red";
-
-            ctx.fill();
+            if(!this.getHover()){
+                ctx.fillStyle = this.map.colorFillNormal;
+            }else{
+                ctx.fillStyle = this.map.colorFillHover;
+            }
         }
+        ctx.fill();
 
         // Draw outline of node
-        ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
-        ctx.fillStyle = "#222";
+        ctx.fillStyle = this.map.colorStroke;
         ctx.lineWidth = 3;
         ctx.stroke();
     }

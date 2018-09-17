@@ -12,10 +12,8 @@ var mapConfig = {
 }
 
 function init(){
-    console.log("loaded");
     var map = new Map(mapConfig);
     map.appendHtmlCanvas();
-    map.update();
 }
 
 document.addEventListener("DOMContentLoaded", init, false);

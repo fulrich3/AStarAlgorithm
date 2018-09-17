@@ -18,6 +18,11 @@ export default class Map {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
+    colorStroke:string = "#111";
+    colorFillNormal:string = "#fff";
+    colorFillSolid:string = "#161616";
+    colorFillHover:string = "#f00";
+
     constructor(config:mapConfigInterface){
         if (config.width)
             this.width = Math.floor(config.width);
@@ -41,7 +46,9 @@ export default class Map {
         // Add nodes to grid
         for(let x:number=0; x<this.width; x++){
             for(let y:number=0; y<this.height; y++){
-                this.grid[x][y] = new Node(this,x,y,true);
+                let walkable = true;
+                let map = this;
+                this.grid[y][x] = new Node(map,x,y,walkable);
             }
         }
 
@@ -61,12 +68,16 @@ export default class Map {
         }else{
             document.getElementById(tagId).appendChild(this.canvas);
         }
+
+        this.drawHtmlCanvas();
     }
 
+    /*
     update(){
         console.log("update");
         this.drawHtmlCanvas();
     }
+    */
 
     drawHtmlCanvas(){
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
