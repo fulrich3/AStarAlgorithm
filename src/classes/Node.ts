@@ -77,9 +77,9 @@ export default class Node {
 
     // Other
     draw(){
-        //console.log(this);
-        
         let ctx = this.map.ctx;
+
+        ctx.beginPath();
         // Set draw area for the node
         ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
 
@@ -96,11 +96,14 @@ export default class Node {
                 ctx.fillStyle = this.map.colorFillHover;
             }
         }
+        
         ctx.fill();
 
         // Draw outline of node
         ctx.fillStyle = this.map.colorStroke;
         ctx.lineWidth = 3;
         ctx.stroke();
+
+        ctx.closePath();
     }
 }

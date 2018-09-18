@@ -51,9 +51,13 @@ export default class Client{
                 // The node the client is focused is the hover node
                 this.nodeFocused = hoveredNode;
             }
-        }else{
-            this.nodeFocused.setHover(false);
         }
+        else{
+            if(this.nodeFocused){
+                this.nodeFocused.setHover(false);
+            }
+        }
+        
     }
 
     // Will be executed on click (doesn't work yet)
