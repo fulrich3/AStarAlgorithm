@@ -19,9 +19,9 @@ export default class Map {
     ctx: CanvasRenderingContext2D;
 
     colorStroke:string = "#111";
+    colorStrokeHover:string = "#666";
     colorFillNormal:string = "#fff";
     colorFillSolid:string = "#161616";
-    colorFillHover:string = "#f00";
 
     constructor(config:mapConfigInterface){
         if (config.width)
@@ -56,7 +56,7 @@ export default class Map {
         this.client = new Client(this);
     }
 
-    appendHtmlCanvas(tagId?:string){
+    public appendHtmlCanvas(tagId?:string){
         this.canvas = document.createElement("canvas");
         this.ctx = this.canvas.getContext("2d");
         this.canvas.style.backgroundColor = "gray";
@@ -79,7 +79,7 @@ export default class Map {
     }
     */
 
-    drawHtmlCanvas(){
+   public drawHtmlCanvas(){
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         for(let y:number=0; y<this.height; y++){

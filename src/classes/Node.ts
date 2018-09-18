@@ -25,49 +25,49 @@ export default class Node {
         this.walkable = walkable;
     }
 
-    consoleLogPositionOnGrid(){
+    public consoleLogPositionOnGrid(){
         console.log("X:"+this.gridPosition.x+" Y:"+this.gridPosition.y);
     }
 
     // Accessors
-    getGCost(){
+    public getGCost(){
         return this.gCost;
     }
 
-    getHCost(){
+    public getHCost(){
         return this.hCost;
     }
 
-    getFCost(){
+    public getFCost(){
         return this.gCost + this.hCost;
     }
 
-    getWalkable(){
+    public getWalkable(){
         return this.walkable;
     }
 
-    getHover(){
+    public getHover(){
         return this.hover;
     }
 
     // Mutators
-    setGCost(value:number){
+    public setGCost(value:number){
         this.gCost = value;
     }
 
-    setHCost(value:number){
+    public setHCost(value:number){
         this.hCost = value;
     }
 
-    setWalkable(value:boolean){
+    public setWalkable(value:boolean){
         if(value == !this.getWalkable()){
             this.walkable = value;
-            this.consoleLogPositionOnGrid();
+            //this.consoleLogPositionOnGrid();
             this.draw();
         }
     }
 
-    setHover(value:boolean){
+    public setHover(value:boolean){
         // We set it only if it's different from the current one
         if(value == !this.getHover()){
             this.hover = value;
@@ -76,32 +76,40 @@ export default class Node {
     }
 
     // Other
-    draw(){
+    public draw(){
         let ctx = this.map.ctx;
 
         ctx.beginPath();
         // Set draw area for the node
         ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
 
-        // Set color
-        // Unwalkable node
+        // Set fill color
         if(!this.getWalkable()){
+            // Unwalkable node
             ctx.fillStyle = this.map.colorFillSolid;
+        }else{
+            // Walkable node
+            ctx.fillStyle = this.map.colorFillNormal;
         }
-        // Walkable node
-        else{
-            if(!this.getHover()){
-                ctx.fillStyle = this.map.colorFillNormal;
-            }else{
-                ctx.fillStyle = this.map.colorFillHover;
-            }
-        }
-        
         ctx.fill();
 
-        // Draw outline of node
-        ctx.fillStyle = this.map.colorStroke;
-        ctx.lineWidth = 3;
+
+        if(!this.getWalkable()){
+            // Unwalkable node
+            ctx.fillStyle = this.map.colorFillSolid;
+        }else{
+            // Walkable node
+            ctx.fillStyle = this.map.colorFillNormal;
+        }
+
+        if(!this.getHover()){
+            ctx.strokeStyle = this.map.colorStroke;
+        }else{
+            ctx.strokeStyle = this.map.colorStrokeHover;
+        }
+
+        // Draw stroke of node
+        ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.closePath();
