@@ -7,8 +7,14 @@ canvas{
     display:block;
 }
 
-button.htmlButton{
-    display:inline-block;
-    margin: 8px 8px 8px 0px;
-    padding: 8px;
+button{
+    &.htmlButton{
+        display:inline-block;
+        margin: 8px 8px 8px 0px;
+        padding: 8px;
+    }
+    
+    &.active{
+        opacity:0.5;
+    }
 }

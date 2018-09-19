@@ -16,6 +16,9 @@ export default class Map {
     height: number = 20;
     cellSize: number = 20;
 
+    private startNode:Node;
+    private goalNode:Node;
+
     constructor(config:mapConfigInterface){
         if (config.width)
             this.width = Math.floor(config.width);
@@ -44,6 +47,56 @@ export default class Map {
                 this.grid[y][x] = new Node(map,x,y,walkable);
             }
         }
+    }
+
+    // Accessors
+    getStartNode(){
+        return this.startNode;
+    }
+
+    getGoalNode(){
+        return this.goalNode;
+    }
+
+    // Mutators
+    setStartNode(node:Node){
+        if(node==this.goalNode || (node && !node.getWalkable()))
+            return;
+
+        if(!node){
+            //this.startNode = new Node(this,this.startNode.gridPosition.x,this.startNode.gridPosition.y,true);
+            this.startNode = null;
+            this.client.draw();
+            return;
+        }else{
+            let oldNode = this.startNode;
+            this.startNode = node;
+            if(oldNode){
+                oldNode.draw();
+            }
+        }
+       
+        this.startNode.draw();
+    }
+
+    setGoalNode(node:Node){
+        if(node==this.startNode || (node && !node.getWalkable()))
+            return;
+
+        if(!node){
+            //this.goalNode = new Node(this,this.goalNode.gridPosition.x,this.goalNode.gridPosition.y,true);
+            this.goalNode = null;
+            this.client.draw();
+            return;
+        }else{
+            let oldNode = this.goalNode;
+            this.goalNode = node;
+            if(oldNode){
+                oldNode.draw();
+            }
+        }
+
+        this.goalNode.draw();
     }
 
     public appendHtmlEditorToElement(element:HTMLElement){

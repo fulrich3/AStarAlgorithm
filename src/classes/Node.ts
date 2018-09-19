@@ -1,7 +1,5 @@
 import Map from './Map';
-import HtmlButton from './client/HtmlButton';
-
-//import canvasDrawRectangle from '../utils';
+import Client from './Client';
 
 export default class Node {
     map:Map; // Reference to the parent map
@@ -62,9 +60,11 @@ export default class Node {
     }
 
     public setWalkable(value:boolean){
+        if(this.isStartNode() || this.isGoalNode())
+            return;
+
         if(value == !this.getWalkable()){
             this.walkable = value;
-            //this.consoleLogPositionOnGrid();
             this.draw();
         }
     }
@@ -78,11 +78,15 @@ export default class Node {
     }
 
     // Other
+    public isStartNode(){
+        return this === this.map.getStartNode();
+    }
+
+    public isGoalNode(){
+        return this === this.map.getGoalNode();
+    }
+
     public draw(){
-        /*
-        console.log(this.map);
-        console.log(this.map.client);
-*/
         if(this.map.client){
             let ctx = this.map.client.ctx;
 
@@ -93,27 +97,26 @@ export default class Node {
             // Set fill color
             if(!this.getWalkable()){
                 // Unwalkable node
-                ctx.fillStyle = this.map.client.colorFillSolid;
+                ctx.fillStyle = Client.colorFillSolid;
             }else{
                 // Walkable node
-                ctx.fillStyle = this.map.client.colorFillNormal;
+
+                if(this.isStartNode()){
+                    ctx.fillStyle = Client.colorFillStart;
+                }else if(this.isGoalNode()){
+                    ctx.fillStyle = Client.colorFillGoal;
+                }else{
+                    ctx.fillStyle = Client.colorFillNormal;
+                }
+                
             }
             ctx.fill();
 
-
-            if(!this.getWalkable()){
-                // Unwalkable node
-                ctx.fillStyle = this.map.client.colorFillSolid;
-            }else{
-                // Walkable node
-                ctx.fillStyle = this.map.client.colorFillNormal;
-            }
-
             // Stroke
             if(!this.getHover()){
-                ctx.strokeStyle = this.map.client.colorStroke;
+                ctx.strokeStyle = Client.colorStroke;
             }else{
-                ctx.strokeStyle = this.map.client.colorStrokeHover;
+                ctx.strokeStyle = Client.colorStrokeHover;
             }
 
             // Draw stroke of node

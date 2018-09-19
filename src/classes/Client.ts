@@ -2,6 +2,7 @@ import Map from './Map';
 import Node from './Node';
 import HtmlButton from './client/HtmlButton';
 
+
 export default class Client{
     map:Map;
     mouseX:number = 0;
@@ -10,14 +11,30 @@ export default class Client{
     mouseIsDown:boolean = false;
     cursorOutOfBounds:boolean = false;
 
+    private editMode:number = 0;
+
+    // HTML elements
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     parentHtmlElement: HTMLElement;
 
-    colorStroke:string = "#111";
-    colorStrokeHover:string = "#AAA";
-    colorFillNormal:string = "#fff";
-    colorFillSolid:string = "#161616";
+    // Stroke colors
+    public static readonly colorStroke:string = "#111";
+    public static readonly colorStrokeHover:string = "#AAA";
+
+    public static readonly colorFillNormal:string = "#fff";
+    public static readonly colorFillSolid:string = "#161616";
+    public static readonly colorFillStart:string = "red";
+    public static readonly colorFillGoal:string = "green";
+
+    // Edit modes
+    public static readonly EDIT_MODE_EMPTY:number = 0;
+    public static readonly EDIT_MODE_WALKABLE:number = 1;
+    public static readonly EDIT_MODE_START:number = 2;
+    public static readonly EDIT_MODE_GOAL:number = 3;
+
+    // Editor inputs list
+    private inputElementsList:Array<any> = [];
 
     constructor(map:Map,parentHtmlElement:HTMLElement){
         this.map = map;
@@ -71,19 +88,26 @@ export default class Client{
         });
 
         // Append editor buttons
-        new HtmlButton(client,"Add walls",function(){
-            console.log("Add walls");
-        });
+        this.inputElementsList.push(new HtmlButton(client,"Delete walls",true,function(){
+            this.editMode = Client.EDIT_MODE_EMPTY;
+        }.bind(this)));
 
-        new HtmlButton(client,"Add start node",function(){
-            console.log("Add start node");
-        });
+        this.inputElementsList.push(new HtmlButton(client,"Add walls",true,function(){
+            this.editMode = Client.EDIT_MODE_WALKABLE;
+        }.bind(this)));
 
-        new HtmlButton(client,"Add end node",function(){
-            console.log("Add end node");
-        });
+        this.inputElementsList.push(new HtmlButton(client,"Add start node",true,function(){
+            this.editMode = Client.EDIT_MODE_START;
+        }.bind(this)));
 
-        new HtmlButton(client,"Reset grid",function(){
+        this.inputElementsList.push(new HtmlButton(client,"Add end node",true,function(){
+            this.editMode = Client.EDIT_MODE_GOAL;
+        }.bind(this)));
+
+        new HtmlButton(client,"Reset grid",false,function(){
+            this.map.setStartNode(null);
+            this.map.setGoalNode(null);
+
             for(let y:number=0; y<this.map.height; y++){
                 for(let x:number=0; x<this.map.width; x++){
                     let currentNode = this.map.grid[y][x];
@@ -93,6 +117,14 @@ export default class Client{
                 }
             }
         }.bind(this));
+    }
+
+    public deactivateButtons(){
+        this.inputElementsList.forEach(element => {
+            if(element instanceof HtmlButton){
+                element.deactivate();
+            }
+        });
     }
 
     // Will be executed each frame the mouse position has changed
@@ -150,8 +182,23 @@ export default class Client{
 
     // Edit focused node
     private editNode(){
-        if(this.nodeFocused)
-            this.nodeFocused.setWalkable(false);
+        if(this.nodeFocused){
+            switch(this.editMode){
+                case Client.EDIT_MODE_EMPTY:
+                    this.nodeFocused.setWalkable(true);
+                    break;
+                case Client.EDIT_MODE_WALKABLE:
+                    this.nodeFocused.setWalkable(false);
+                    break;
+                case Client.EDIT_MODE_START:
+                    this.map.setStartNode(this.nodeFocused);
+                    break;
+                case Client.EDIT_MODE_GOAL:
+                    this.map.setGoalNode(this.nodeFocused);
+                    break;
+
+            }
+        }
     }
 
     public draw(){
