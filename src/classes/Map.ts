@@ -37,8 +37,8 @@ export default class Map {
         }
 
         // Add nodes to grid
-        for(let x:number=0; x<this.width; x++){
-            for(let y:number=0; y<this.height; y++){
+        for(let y:number=0; y<this.height; y++){
+            for(let x:number=0; x<this.width; x++){
                 let walkable = true;
                 let map = this;
                 this.grid[y][x] = new Node(map,x,y,walkable);

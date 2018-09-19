@@ -41,6 +41,12 @@ export default class Client{
         // Append canvas to the selected HTML element
         this.parentHtmlElement.appendChild(this.canvas);
 
+        // Listener for right click
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault()
+            console.log("Click droit!");
+        });
+
         // Listener for mouse move event
         window.addEventListener("mousemove", (e) => {
             this.mouseX = e.clientX - this.canvas.offsetLeft;
@@ -76,6 +82,17 @@ export default class Client{
         new HtmlButton(client,"Add end node",function(){
             console.log("Add end node");
         });
+
+        new HtmlButton(client,"Reset grid",function(){
+            for(let y:number=0; y<this.map.height; y++){
+                for(let x:number=0; x<this.map.width; x++){
+                    let currentNode = this.map.grid[y][x];
+                    currentNode.setWalkable(true);
+                    currentNode.setGCost(0);
+                    currentNode.setHCost(0);
+                }
+            }
+        }.bind(this));
     }
 
     // Will be executed each frame the mouse position has changed
