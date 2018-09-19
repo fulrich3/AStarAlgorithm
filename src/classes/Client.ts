@@ -69,31 +69,29 @@ export default class Client{
         else{
             if(this.nodeFocused){
                 this.nodeFocused.setHover(false);
+                this.nodeFocused = null;
             }
         }
-        
     }
 
+    // Executed when mouseup javascript event is executed
     private mouseUp(){
         this.mouseIsDown=false;
-        this.editNode();
     }
 
+    // Executed when mousedown javascript event is executed
     private mouseDown(){
         this.mouseIsDown=true;
         this.editNode();
     }
 
-    // Will be executed on click (doesn't work yet)
+    // Will be executed on click
     private click(){
-        // Toggle node solid mode
-        if(!this.cursorOutOfBounds && this.nodeFocused){
-            // Set Value 
-            this.nodeFocused.setWalkable(!this.nodeFocused.walkable);
-        }
     }
 
+    // Edit focused node
     private editNode(){
-        this.nodeFocused.setWalkable(false);
+        if(this.nodeFocused)
+            this.nodeFocused.setWalkable(false);
     }
 }

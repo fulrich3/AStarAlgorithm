@@ -1,5 +1,6 @@
 import Node from './Node';
 import Client from './Client';
+import HtmlButton from './client/HtmlButton';
 
 interface mapConfigInterface {
     width:number,
@@ -17,9 +18,10 @@ export default class Map {
     cellSize: number = 20;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
+    parentHtmlElement: HTMLElement;
 
     colorStroke:string = "#111";
-    colorStrokeHover:string = "#666";
+    colorStrokeHover:string = "#AAA";
     colorFillNormal:string = "#fff";
     colorFillSolid:string = "#161616";
 
@@ -57,6 +59,8 @@ export default class Map {
     }
 
     public appendHtmlCanvas(tagId?:string){
+        let map = this;
+
         this.canvas = document.createElement("canvas");
         this.ctx = this.canvas.getContext("2d");
         this.canvas.style.backgroundColor = "gray";
@@ -64,10 +68,24 @@ export default class Map {
         this.canvas.height = this.height * this.cellSize;
 
         if(tagId == undefined){
-            document.body.appendChild(this.canvas);
+            this.parentHtmlElement = document.body;
         }else{
-            document.getElementById(tagId).appendChild(this.canvas);
+            this.parentHtmlElement = document.getElementById(tagId);
         }
+
+        this.parentHtmlElement.appendChild(this.canvas);
+
+        new HtmlButton(map,"Test1",function(){
+            console.log("Click 1!");
+        });
+
+        new HtmlButton(map,"Test2",function(){
+            console.log("Click 2!");
+        });
+
+        new HtmlButton(map,"Test3",function(){
+            console.log("Click 3!");
+        });
 
         this.drawHtmlCanvas();
     }
