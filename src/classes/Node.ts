@@ -1,4 +1,6 @@
 import Map from './Map';
+import HtmlButton from './client/HtmlButton';
+
 //import canvasDrawRectangle from '../utils';
 
 export default class Node {
@@ -77,41 +79,48 @@ export default class Node {
 
     // Other
     public draw(){
-        let ctx = this.map.ctx;
+        /*
+        console.log(this.map);
+        console.log(this.map.client);
+*/
+        if(this.map.client){
+            let ctx = this.map.client.ctx;
 
-        ctx.beginPath();
-        // Set draw area for the node
-        ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
+            ctx.beginPath();
+            // Set draw area for the node
+            ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
 
-        // Set fill color
-        if(!this.getWalkable()){
-            // Unwalkable node
-            ctx.fillStyle = this.map.colorFillSolid;
-        }else{
-            // Walkable node
-            ctx.fillStyle = this.map.colorFillNormal;
+            // Set fill color
+            if(!this.getWalkable()){
+                // Unwalkable node
+                ctx.fillStyle = this.map.client.colorFillSolid;
+            }else{
+                // Walkable node
+                ctx.fillStyle = this.map.client.colorFillNormal;
+            }
+            ctx.fill();
+
+
+            if(!this.getWalkable()){
+                // Unwalkable node
+                ctx.fillStyle = this.map.client.colorFillSolid;
+            }else{
+                // Walkable node
+                ctx.fillStyle = this.map.client.colorFillNormal;
+            }
+
+            // Stroke
+            if(!this.getHover()){
+                ctx.strokeStyle = this.map.client.colorStroke;
+            }else{
+                ctx.strokeStyle = this.map.client.colorStrokeHover;
+            }
+
+            // Draw stroke of node
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.closePath();
         }
-        ctx.fill();
-
-
-        if(!this.getWalkable()){
-            // Unwalkable node
-            ctx.fillStyle = this.map.colorFillSolid;
-        }else{
-            // Walkable node
-            ctx.fillStyle = this.map.colorFillNormal;
-        }
-
-        if(!this.getHover()){
-            ctx.strokeStyle = this.map.colorStroke;
-        }else{
-            ctx.strokeStyle = this.map.colorStrokeHover;
-        }
-
-        // Draw stroke of node
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.closePath();
     }
 }

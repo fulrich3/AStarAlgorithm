@@ -1,5 +1,6 @@
 import Map from './Map';
 import Node from './Node';
+import HtmlButton from './client/HtmlButton';
 
 export default class Client{
     map:Map;
@@ -9,13 +10,41 @@ export default class Client{
     mouseIsDown:boolean = false;
     cursorOutOfBounds:boolean = false;
 
-    constructor(map:Map){
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    parentHtmlElement: HTMLElement;
+
+    colorStroke:string = "#111";
+    colorStrokeHover:string = "#AAA";
+    colorFillNormal:string = "#fff";
+    colorFillSolid:string = "#161616";
+
+    constructor(map:Map,parentHtmlElement:HTMLElement){
         this.map = map;
+
+        // Create canvas element
+        this.canvas = document.createElement("canvas");
+        this.ctx = this.canvas.getContext("2d");
+        this.canvas.style.backgroundColor = "gray";
+        this.canvas.width = this.map.width * this.map.cellSize;
+        this.canvas.height = this.map.height * this.map.cellSize;
+
+        // Selection of the canvas's parent HTML element
+        this.parentHtmlElement = parentHtmlElement;
+
+        this.init();
+    }
+
+    init(){
+        let client = this;
+
+        // Append canvas to the selected HTML element
+        this.parentHtmlElement.appendChild(this.canvas);
 
         // Listener for mouse move event
         window.addEventListener("mousemove", (e) => {
-            this.mouseX = e.clientX - this.map.canvas.offsetLeft;
-            this.mouseY = e.clientY - this.map.canvas.offsetTop;
+            this.mouseX = e.clientX - this.canvas.offsetLeft;
+            this.mouseY = e.clientY - this.canvas.offsetTop;
 
             this.mouseMove();
         });
@@ -33,6 +62,19 @@ export default class Client{
         // Listener for mouse mouseup event
         window.addEventListener("mouseup", (e) => {
             this.mouseUp();
+        });
+
+        // Append editor buttons
+        new HtmlButton(client,"Add walls",function(){
+            console.log("Add walls");
+        });
+
+        new HtmlButton(client,"Add start node",function(){
+            console.log("Add start node");
+        });
+
+        new HtmlButton(client,"Add end node",function(){
+            console.log("Add end node");
         });
     }
 
@@ -93,5 +135,18 @@ export default class Client{
     private editNode(){
         if(this.nodeFocused)
             this.nodeFocused.setWalkable(false);
+    }
+
+    public draw(){
+        for(let y:number=0; y<this.map.height; y++){
+            for(let x:number=0; x<this.map.width; x++){
+                let currentNode = this.map.grid[y][x];
+                currentNode.draw();
+            }
+        }
+    }
+
+    drawEmptyCanvas(){
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }

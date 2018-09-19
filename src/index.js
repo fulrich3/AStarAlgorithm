@@ -13,7 +13,7 @@ var mapConfig = {
 
 function init(){
     var map = new Map(mapConfig);
-    map.appendHtmlCanvas();
+    map.appendHtmlEditorToElement(document.body);
 }
 
 document.addEventListener("DOMContentLoaded", init, false);
