@@ -59,10 +59,12 @@ export default class Client{
         this.parentHtmlElement.appendChild(this.canvas);
 
         // Listener for right click
+        /*
         document.addEventListener('contextmenu', (event) => {
             event.preventDefault()
             console.log("Click droit!");
         });
+        */
 
         // Listener for mouse move event
         window.addEventListener("mousemove", (e) => {
@@ -104,9 +106,10 @@ export default class Client{
             this.editMode = Client.EDIT_MODE_GOAL;
         }.bind(this)));
 
+        // Reset grid button
         new HtmlButton(client,"Reset grid",false,function(){
-            this.map.setStartNode(null);
             this.map.setGoalNode(null);
+            this.map.setStartNode(null);
 
             for(let y:number=0; y<this.map.height; y++){
                 for(let x:number=0; x<this.map.width; x++){

@@ -100,7 +100,6 @@ export default class Node {
                 ctx.fillStyle = Client.colorFillSolid;
             }else{
                 // Walkable node
-
                 if(this.isStartNode()){
                     ctx.fillStyle = Client.colorFillStart;
                 }else if(this.isGoalNode()){

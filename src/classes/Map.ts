@@ -60,31 +60,27 @@ export default class Map {
 
     // Mutators
     setStartNode(node:Node){
-        if(node==this.goalNode || (node && !node.getWalkable()))
+        if(node && (!node.getWalkable() || node===this.goalNode))
             return;
 
         if(!node){
-            //this.startNode = new Node(this,this.startNode.gridPosition.x,this.startNode.gridPosition.y,true);
             this.startNode = null;
             this.client.draw();
-            return;
         }else{
             let oldNode = this.startNode;
             this.startNode = node;
             if(oldNode){
                 oldNode.draw();
             }
+            this.startNode.draw();
         }
-       
-        this.startNode.draw();
     }
 
     setGoalNode(node:Node){
-        if(node==this.startNode || (node && !node.getWalkable()))
+        if(node && (!node.getWalkable() || node===this.startNode))
             return;
 
         if(!node){
-            //this.goalNode = new Node(this,this.goalNode.gridPosition.x,this.goalNode.gridPosition.y,true);
             this.goalNode = null;
             this.client.draw();
             return;
@@ -94,9 +90,8 @@ export default class Map {
             if(oldNode){
                 oldNode.draw();
             }
+            this.goalNode.draw();
         }
-
-        this.goalNode.draw();
     }
 
     public appendHtmlEditorToElement(element:HTMLElement){
