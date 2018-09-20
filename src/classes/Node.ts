@@ -2,15 +2,15 @@ import Map from './Map';
 import Client from './Client';
 
 export default class Node {
-    map:Map; // Reference to the parent map
-    gridPosition = { // Position in the grid
+    private map:Map; // Reference to the parent map
+    private gridPosition = { // Position in the grid
         x:0,
         y:0,
     };
-    gCost:number = 0;
-    hCost:number = 0;
-    walkable:boolean = true;
-    hover:boolean = false;
+    private gCost:number = 0;
+    private hCost:number = 0;
+    private walkable:boolean = true;
+    private hover:boolean = false;
 
     constructor(map:Map,x:number,y:number,walkable:boolean){
         this.map = map;
@@ -88,8 +88,8 @@ export default class Node {
     }
 
     public draw(){
-        if(this.map.client){
-            let ctx = this.map.client.ctx;
+        if(this.map.getClient()){
+            let ctx = this.map.getClient().getCtx();
 
             ctx.beginPath();
             // Set draw area for the node

@@ -4,19 +4,19 @@ import HtmlButton from './client/HtmlButton';
 
 
 export default class Client{
-    map:Map;
-    mouseX:number = 0;
-    mouseY:number = 0;
-    nodeFocused:Node;
-    mouseIsDown:boolean = false;
-    cursorOutOfBounds:boolean = false;
+    private map:Map;
+    private mouseX:number = 0;
+    private mouseY:number = 0;
+    private nodeFocused:Node;
+    private mouseIsDown:boolean = false;
+    private cursorOutOfBounds:boolean = false;
 
     private editMode:number = 0;
 
     // HTML elements
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    parentHtmlElement: HTMLElement;
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private parentHtmlElement: HTMLElement;
 
     // Stroke colors
     public static readonly colorStroke:string = "#111";
@@ -50,8 +50,8 @@ export default class Client{
         this.canvas = document.createElement("canvas");
         this.ctx = this.canvas.getContext("2d");
         this.canvas.style.backgroundColor = "gray";
-        this.canvas.width = this.map.width * this.map.getCellSize();
-        this.canvas.height = this.map.height * this.map.getCellSize();
+        this.canvas.width = this.map.getWidth() * this.map.getCellSize();
+        this.canvas.height = this.map.getHeight() * this.map.getCellSize();
 
         // Selection of the canvas's parent HTML element
         this.parentHtmlElement = parentHtmlElement;
@@ -119,7 +119,7 @@ export default class Client{
             this.map.setStartNode(null);
 
             for(let y:number=0; y<this.map.height; y++){
-                for(let x:number=0; x<this.map.width; x++){
+                for(let x:number=0; x<this.map.getWidth(); x++){
                     let currentNode = this.map.grid[y][x];
                     currentNode.setWalkable(true);
                     currentNode.setGCost(0);
@@ -133,6 +133,17 @@ export default class Client{
         }.bind(this)));
     }
 
+    // Accessor
+    public getCtx(){
+        return this.ctx;
+    }
+
+    public getParentHtmlElement(){
+        return this.parentHtmlElement;
+    }
+
+
+
     public deactivateButtons(){
         this.inputElementsList.forEach(element => {
             if(element instanceof HtmlButton){
@@ -144,12 +155,13 @@ export default class Client{
     // Will be executed each frame the mouse position has changed
     private mouseMove(){
         // We first check if the cursor is inside the canvas area
-        this.cursorOutOfBounds = !(this.mouseX>=0 && this.mouseX<this.map.width*this.map.getCellSize() && this.mouseY>=0 && this.mouseY<this.map.height*this.map.getCellSize());
+        this.cursorOutOfBounds = !(this.mouseX>=0 && this.mouseX<this.map.getWidth()*this.map.getCellSize() && this.mouseY>=0 && this.mouseY<this.map.getHeight()*this.map.getCellSize());
 
         // If the cursor is inside the canvas area
         if(!this.cursorOutOfBounds){
             // We set the hovered node
-            let hoveredNode = this.map.grid[Math.floor(this.mouseY/this.map.getCellSize())][Math.floor(this.mouseX/this.map.getCellSize())];
+            //let hoveredNode = this.map.grid[Math.floor(this.mouseY/this.map.getCellSize())][Math.floor(this.mouseX/this.map.getCellSize())];
+            let hoveredNode = this.map.getNodeAtPosition(Math.floor(this.mouseX/this.map.getCellSize()),Math.floor(this.mouseY/this.map.getCellSize()));
 
             // If the hovered node isn't the focused one, we don't do anything
             if(hoveredNode && hoveredNode!=this.nodeFocused){
@@ -216,9 +228,9 @@ export default class Client{
     }
 
     public draw(){
-        for(let y:number=0; y<this.map.height; y++){
-            for(let x:number=0; x<this.map.width; x++){
-                let currentNode = this.map.grid[y][x];
+        for(let y:number=0; y<this.map.getHeight(); y++){
+            for(let x:number=0; x<this.map.getWidth(); x++){
+                let currentNode = this.map.getNodeAtPosition(x,y);
                 currentNode.draw();
             }
         }

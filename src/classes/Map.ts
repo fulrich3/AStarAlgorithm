@@ -10,10 +10,10 @@ interface mapConfigInterface {
 }
 
 export default class Map {
-    grid:Node[][] = [];
-    client:Client;
-    width: number = 20;
-    height: number = 20;
+    private grid:Node[][] = [];
+    private client:Client;
+    private width: number = 20;
+    private height: number = 20;
     private cellSize: number = 20;
 
     private startNode:Node;
@@ -50,16 +50,32 @@ export default class Map {
     }
 
     // Accessors
-    getStartNode(){
+    public getNodeAtPosition(x:number,y:number){
+        return this.grid[y][x];
+    }
+
+    public getClient(){
+        return this.client;
+    }
+
+    public getWidth(){
+        return this.width;
+    }
+
+    public getHeight(){
+        return this.height;
+    }
+
+    public getCellSize(){
+        return this.cellSize;
+    }
+
+    public getStartNode(){
         return this.startNode;
     }
 
-    getGoalNode(){
+    public getGoalNode(){
         return this.goalNode;
-    }
-
-    getCellSize(){
-        return this.cellSize;
     }
 
     // Mutators

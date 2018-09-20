@@ -18,7 +18,7 @@ export default class HtmlButton {
         this.element = document.createElement("button");
         this.element.classList.add("htmlButton");
         this.element.innerHTML = this.title;
-        this.client.parentHtmlElement.appendChild(this.element);
+        this.client.getParentHtmlElement().appendChild(this.element);
 
         // Add click event
         this.element.addEventListener("click", (e) => {
