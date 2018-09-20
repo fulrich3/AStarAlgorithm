@@ -50,6 +50,9 @@ export default class Map {
                 this.grid[y][x] = new Node(map,x,y,walkable);
             }
         }
+
+        this.setStartNode(this.getNodeAtPosition(5,10));
+        this.setGoalNode(this.getNodeAtPosition(15,10));
     }
 
     // Accessors
@@ -163,9 +166,10 @@ export default class Map {
         }
     }
 */
-    public moveNodeFromOpenToCosedList(node:Node){
+    public moveNodeFromOpenToClosedList(node:Node){
         this.deleteNodeFromOpenList(node);
         this.addNodeToClosedList(node);
+        node.draw();
     }
 
     /*
@@ -174,39 +178,49 @@ export default class Map {
     ==================
     */
     public publicAStarExecuteNextStep(){
-        if(!this.startNode || !this.goalNode){
+        if(!this.startNode || !this.goalNode || (this.getClosedList().includes(this.getGoalNode()))){
             return;
         }
 
-        this.openList.forEach(node => {
-            // Add every neighbour of the open list to the open list
-            for(let y = node.getGridPosition().y-1 ; y<node.getGridPosition().y+2 ; y++){
-                for(let x= node.getGridPosition().x-1; x<node.getGridPosition().x+2 ; x++){
-                    // We don't want to check the current node
-                    if(x==node.getGridPosition().x && y==node.getGridPosition().y)
-                        continue;
+        // We select the Node with the lowest FCost
+        var nodeWithLowestFCost:Node = null;
 
-                    console.log("AH!")
-                    
-                    // Get current neighbour
-                    let neighbourNode:Node = this.getNodeAtPosition(x,y);
-
-                    if(neighbourNode.inClosedList() || neighbourNode.inOpenList())
-                        continue;
-
-                    this.addNodeToOpenList(neighbourNode);
-                    neighbourNode.draw();
-                }
+        this.openList.forEach((currentNode,index) => {
+            if(index==0 || currentNode.getFCost()<nodeWithLowestFCost.getFCost()){
+                nodeWithLowestFCost = this.openList[index];
             }
-
-            this.moveNodeFromOpenToCosedList(node);
         });
 
+        // Add every neighbour of the open list to the open list
+        for(let y = nodeWithLowestFCost.getGridPosition().y-1 ; y<nodeWithLowestFCost.getGridPosition().y+2 ; y++){
+            for(let x= nodeWithLowestFCost.getGridPosition().x-1; x<nodeWithLowestFCost.getGridPosition().x+2 ; x++){
+                
+                // We don't want to check the current node
+                if(x==nodeWithLowestFCost.getGridPosition().x && y==nodeWithLowestFCost.getGridPosition().y)
+                    continue;
+                
+                // If x or y is out of bounds, continue
+                if(x<0 || y<0 || x>this.width || y>this.height)
+                    continue;
+                
+                
+                // Get current neighbour
+                let neighbourNode:Node = this.getNodeAtPosition(x,y);
+                
+                // Check if current node is the goal node.
+                if(neighbourNode == this.getGoalNode()){
+                    console.log("Path found!!");
+                }
 
 
-        console.log("Open list: ");
-        console.log(this.openList);
-        console.log("Closed list: ");
-        console.log(this.closedList);
+                if(neighbourNode.inClosedList() || neighbourNode.inOpenList() || neighbourNode.getWalkable()==false)
+                    continue;
+
+                this.addNodeToOpenList(neighbourNode);
+                neighbourNode.draw();
+            }
+        }
+
+        this.moveNodeFromOpenToClosedList(nodeWithLowestFCost);
     }
 }

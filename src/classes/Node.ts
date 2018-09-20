@@ -1,14 +1,14 @@
 import Map from './Map';
 import Client from './Client';
 
+import pointDistance from './Function';
+
 export default class Node {
     private map:Map; // Reference to the parent map
     private gridPosition = { // Position in the grid
         x:0,
         y:0,
     };
-    private gCost:number = 0;
-    private hCost:number = 0;
     private walkable:boolean = true;
     private hover:boolean = false;
 
@@ -25,15 +25,27 @@ export default class Node {
 
     // Accessors
     public getGCost(){
-        return this.gCost;
+        var result:number = 0;
+
+        if(this.map.getStartNode() && this.map.getGoalNode()){
+            result = Math.floor( pointDistance(this.gridPosition.x,this.gridPosition.y,this.map.getStartNode().gridPosition.x,this.map.getStartNode().gridPosition.y)*10);
+        }
+
+        return result;
     }
 
     public getHCost(){
-        return this.hCost;
+        var result:number = 0;
+
+        if(this.map.getStartNode() && this.map.getGoalNode()){
+            result = Math.floor( pointDistance(this.gridPosition.x,this.gridPosition.y,this.map.getGoalNode().gridPosition.x,this.map.getGoalNode().gridPosition.y)*10);
+        }
+
+        return result;
     }
 
     public getFCost(){
-        return this.gCost + this.hCost;
+        return this.getGCost() + this.getHCost();
     }
 
     public getWalkable(){
@@ -59,14 +71,6 @@ export default class Node {
     }
 
     // Mutators
-    public setGCost(value:number){
-        this.gCost = value;
-    }
-
-    public setHCost(value:number){
-        this.hCost = value;
-    }
-
     public setWalkable(value:boolean){
         if(this.isStartNode() || this.isGoalNode())
             return;
@@ -145,15 +149,30 @@ export default class Node {
             }
 
             //Draw text
-            ctx.font = "13px " + Client.FONT;
             ctx.fillStyle = Client.colorTextNormal;
             ctx.textBaseline="middle";
             ctx.textAlign="center";
 
-            if(this.isStartNode()){
-                ctx.fillText("Start" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
-            }else if(this.isGoalNode()){
-                ctx.fillText("Goal" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+            if(this.isStartNode() || this.isGoalNode()){
+                ctx.font = "13px " + Client.FONT;
+                if(this.isStartNode()){
+                    ctx.fillText("Start" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+                }else if(this.isGoalNode()){
+                    ctx.fillText("Goal" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+                }
+            }else{
+                if(this.inOpenList() || this.inClosedList()){
+                    ctx.font = "16px " + Client.FONT;
+                    // Display FCost
+                    ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+
+                    ctx.font = "10px " + Client.FONT;
+                    // Display GCost
+                    ctx.fillText( (this.getGCost()).toString() , this.getWorldPosition().x + 8 , this.getWorldPosition().y + 8);
+
+                    // Display HCost
+                    ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + 8);
+                }
             }
 
             // Draw stroke of node

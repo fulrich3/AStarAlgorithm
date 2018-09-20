@@ -123,8 +123,6 @@ export default class Client{
                 for(let x:number=0; x<this.map.getWidth(); x++){
                     let currentNode = this.map.grid[y][x];
                     currentNode.setWalkable(true);
-                    currentNode.setGCost(0);
-                    currentNode.setHCost(0);
                 }
             }
         }.bind(this));
