@@ -44,6 +44,13 @@ export default class Node {
         return this.hover;
     }
 
+    public getGridPosition(){
+        return {
+            x: this.gridPosition.x,
+            y: this.gridPosition.y,
+        }
+    }
+
     public getWorldPosition(){
         return {
             x: this.gridPosition.x * this.map.getCellSize(),
@@ -87,6 +94,14 @@ export default class Node {
         return this === this.map.getGoalNode();
     }
 
+    public inOpenList(){
+        return this.map.getOpenList().includes(this);
+    }
+
+    public inClosedList(){
+        return this.map.getClosedList().includes(this);
+    }
+
     public draw(){
         if(this.map.getClient()){
             let ctx = this.map.getClient().getCtx();
@@ -101,11 +116,21 @@ export default class Node {
                 ctx.fillStyle = Client.colorFillSolid;
             }else{
                 // Walkable node
+                
                 if(this.isStartNode()){
+                    // Set color for start node
                     ctx.fillStyle = Client.colorFillStart;
                 }else if(this.isGoalNode()){
+                    // Set color for goal node
                     ctx.fillStyle = Client.colorFillGoal;
+                }else if(this.inOpenList()){
+                    // Set color for open node
+                    ctx.fillStyle = Client.colorFillOpen;
+                }else if(this.inClosedList()){
+                    // Set color for closed node
+                    ctx.fillStyle = Client.colorFillClosed;
                 }else{
+                    // Set color for normal node
                     ctx.fillStyle = Client.colorFillNormal;
                 }
                 

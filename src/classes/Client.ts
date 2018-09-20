@@ -18,6 +18,16 @@ export default class Client{
     private ctx: CanvasRenderingContext2D;
     private parentHtmlElement: HTMLElement;
 
+
+    // Editor inputs list
+    private inputElementsList:Array<any> = [];
+
+    /*
+    ==================
+    Static attributes
+    ==================
+    */
+
     // Stroke colors
     public static readonly colorStroke:string = "#111";
     public static readonly colorStrokeHover:string = "#AAA";
@@ -25,8 +35,10 @@ export default class Client{
     // Fill colors
     public static readonly colorFillNormal:string = "#fff";
     public static readonly colorFillSolid:string = "#161616";
-    public static readonly colorFillStart:string = "red";
-    public static readonly colorFillGoal:string = "green";
+    public static readonly colorFillStart:string = "#63c2ff";
+    public static readonly colorFillGoal:string = "#63c2ff";
+    public static readonly colorFillOpen:string = "#7fbf7f";
+    public static readonly colorFillClosed:string = "#ff7f7f";
 
     // Text colors
     public static readonly colorTextNormal:string = "#000";
@@ -39,9 +51,6 @@ export default class Client{
 
     // Font
     public static readonly FONT:string = "Courrier New";
-
-    // Editor inputs list
-    private inputElementsList:Array<any> = [];
 
     constructor(map:Map,parentHtmlElement:HTMLElement){
         this.map = map;
@@ -64,14 +73,6 @@ export default class Client{
 
         // Append canvas to the selected HTML element
         this.parentHtmlElement.appendChild(this.canvas);
-
-        // Listener for right click
-        /*
-        document.addEventListener('contextmenu', (event) => {
-            event.preventDefault()
-            console.log("Click droit!");
-        });
-        */
 
         // Listener for mouse move event
         window.addEventListener("mousemove", (e) => {
@@ -128,8 +129,9 @@ export default class Client{
             }
         }.bind(this));
 
-        this.inputElementsList.push(new HtmlButton(client,"Run",true,function(){
-            console.log("Start pathfinding algorithm");
+        this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
+            
+            this.map.publicAStarExecuteNextStep();
         }.bind(this)));
     }
 
@@ -141,8 +143,6 @@ export default class Client{
     public getParentHtmlElement(){
         return this.parentHtmlElement;
     }
-
-
 
     public deactivateButtons(){
         this.inputElementsList.forEach(element => {
@@ -222,7 +222,6 @@ export default class Client{
                 case Client.EDIT_MODE_GOAL:
                     this.map.setGoalNode(this.nodeFocused);
                     break;
-
             }
         }
     }
@@ -236,7 +235,7 @@ export default class Client{
         }
     }
 
-    drawEmptyCanvas(){
+    public drawEmptyCanvas(){
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
