@@ -110,7 +110,7 @@ export default class Client{
             this.editMode = Client.EDIT_MODE_START;
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(client,"Add end node",true,function(){
+        this.inputElementsList.push(new HtmlButton(client,"Add goal node",true,function(){
             this.editMode = Client.EDIT_MODE_GOAL;
         }.bind(this)));
 
