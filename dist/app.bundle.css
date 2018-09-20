@@ -1,1 +1,1 @@
-.red{color:red}
+html,body{background-color:black;color:white}canvas{display:block}button.htmlButton{display:inline-block;margin:8px 8px 8px 0px;padding:8px}button.active{border:1px solid #4c4c4c;background:linear-gradient(#7b7b7b, #6e6e6e) !important}button:focus{outline:none}
