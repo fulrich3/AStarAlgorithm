@@ -7,10 +7,6 @@ export default class Node {
         x:0,
         y:0,
     };
-    worldPosition = { // Position in the world
-        x:0,
-        y:0,
-    };
     gCost:number = 0;
     hCost:number = 0;
     walkable:boolean = true;
@@ -20,8 +16,6 @@ export default class Node {
         this.map = map;
         this.gridPosition.x = x;
         this.gridPosition.y = y;
-        this.worldPosition.x = x * this.map.cellSize;
-        this.worldPosition.y = y * this.map.cellSize;
         this.walkable = walkable;
     }
 
@@ -48,6 +42,13 @@ export default class Node {
 
     public getHover(){
         return this.hover;
+    }
+
+    public getWorldPosition(){
+        return {
+            x: this.gridPosition.x * this.map.getCellSize(),
+            y: this.gridPosition.y * this.map.getCellSize(),
+        }
     }
 
     // Mutators
@@ -92,7 +93,7 @@ export default class Node {
 
             ctx.beginPath();
             // Set draw area for the node
-            ctx.rect(this.worldPosition.x,this.worldPosition.y,this.map.cellSize,this.map.cellSize);
+            ctx.rect(this.getWorldPosition().x,this.getWorldPosition().y,this.map.getCellSize(),this.map.getCellSize());
 
             // Set fill color
             if(!this.getWalkable()){
@@ -116,6 +117,18 @@ export default class Node {
                 ctx.strokeStyle = Client.colorStroke;
             }else{
                 ctx.strokeStyle = Client.colorStrokeHover;
+            }
+
+            //Draw text
+            ctx.font = "13px " + Client.FONT;
+            ctx.fillStyle = Client.colorTextNormal;
+            ctx.textBaseline="middle";
+            ctx.textAlign="center";
+
+            if(this.isStartNode()){
+                ctx.fillText("Start" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+            }else if(this.isGoalNode()){
+                ctx.fillText("Goal" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
             }
 
             // Draw stroke of node

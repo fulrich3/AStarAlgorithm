@@ -14,7 +14,7 @@ export default class Map {
     client:Client;
     width: number = 20;
     height: number = 20;
-    cellSize: number = 20;
+    private cellSize: number = 20;
 
     private startNode:Node;
     private goalNode:Node;
@@ -58,6 +58,10 @@ export default class Map {
         return this.goalNode;
     }
 
+    getCellSize(){
+        return this.cellSize;
+    }
+
     // Mutators
     setStartNode(node:Node){
         if(node && (!node.getWalkable() || node===this.goalNode))
@@ -93,6 +97,7 @@ export default class Map {
             this.goalNode.draw();
         }
     }
+
 
     public appendHtmlEditorToElement(element:HTMLElement){
         // Set client
