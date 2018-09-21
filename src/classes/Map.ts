@@ -203,10 +203,9 @@ export default class Map {
         });
 
         if(nodeWithLowestFCost){
-        // Add every neighbour of the open list to the open list
+        // Add every possible neighbours of the open list to the open list
             for(let y = nodeWithLowestFCost.getGridPosition().y-1 ; y<nodeWithLowestFCost.getGridPosition().y+2 ; y++){
                 for(let x= nodeWithLowestFCost.getGridPosition().x-1; x<nodeWithLowestFCost.getGridPosition().x+2 ; x++){
-                    
                     // We don't want to check the current node
                     if(x==nodeWithLowestFCost.getGridPosition().x && y==nodeWithLowestFCost.getGridPosition().y)
                         continue;
@@ -218,6 +217,49 @@ export default class Map {
                     // Get current neighbour
                     let neighbourNode:Node = this.getNodeAtPosition(x,y);
 
+                    var xx:number = nodeWithLowestFCost.getGridPosition().x - x;
+                    var yy:number = nodeWithLowestFCost.getGridPosition().y - y;
+                    
+                    if(yy!=0){
+                        if(yy==-1){
+                            if(xx!=0){
+                                if(this.getNodeAtPosition(neighbourNode.getGridPosition().x+xx,neighbourNode.getGridPosition().y+yy).getWalkable())
+
+                                if(xx==-1){
+                                    // Top left corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y-1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x-1,neighbourNode.getGridPosition().y).getWalkable())
+                                        continue;
+                                }
+                                else
+                                if(xx==1){
+                                    // Top right corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y-1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x+1,neighbourNode.getGridPosition().y).getWalkable())
+                                        continue;
+                                }
+                            }
+                        }
+                        else
+                        if(yy==1){
+                            if(xx!=0){
+                                if(xx==-1){
+                                    // Bottom left corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y+1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x-1,neighbourNode.getGridPosition().y).getWalkable())
+                                        continue;
+                                }
+                                else
+                                if(xx==1){
+                                    // Bottom right corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y+1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x+1,neighbourNode.getGridPosition().y).getWalkable())
+                                        continue;
+                                }
+                            }
+                        }
+                    }
+
                     // Check if current node is the goal node.
                     if(neighbourNode == this.getGoalNode()){
                         console.log("Path found!!");
@@ -225,7 +267,7 @@ export default class Map {
 
                     if(neighbourNode.inClosedList() || neighbourNode.inOpenList() || neighbourNode.getWalkable()==false)
                         continue;
-
+                    
                     this.addNodeToOpenList(neighbourNode);
                     neighbourNode.draw();
                 }
