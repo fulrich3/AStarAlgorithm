@@ -70,6 +70,33 @@ export default class Node {
         }
     }
 
+    public getNeighbourWithLowestFCost(){
+        var neighbourNode:Node = null;
+
+        for(let y = this.getGridPosition().y-1 ; y<this.getGridPosition().y+2 ; y++){
+            for(let x= this.getGridPosition().x-1; x<this.getGridPosition().x+2 ; x++){
+                // We don't want to check the current node + If x or y is out of bounds, continue
+                if(x==this.getGridPosition().x && y==this.getGridPosition().y && (x<0 || y<0 || x>this.map.getWidth()-1 || y>this.map.getHeight()-1) && !this.map.getNodeAtPosition(x,y).inClosedList() && this.map.getNodeAtPosition(x,y).getWalkable()!=true)
+                    continue;
+
+                //console.log( this.map.getNodeAtPosition(x,y) );
+                
+                // Get best neighbour
+                if(!neighbourNode || this.map.getNodeAtPosition(x,y).getFCost() < neighbourNode.getFCost()){
+                    neighbourNode = this.map.getNodeAtPosition(x,y);
+                    if(neighbourNode===this.map.getStartNode()){
+                        break;
+                    }
+                }
+            }
+
+            if(neighbourNode===this.map.getStartNode())
+                break;
+        }
+
+        return neighbourNode;
+    }
+
     // Mutators
     public setWalkable(value:boolean){
         if(this.isStartNode() || this.isGoalNode())
@@ -106,6 +133,10 @@ export default class Node {
         return this.map.getClosedList().includes(this);
     }
 
+    public inPathList(){
+        return this.map.getPathList().includes(this);
+    }
+
     public draw(){
         if(this.map.getClient()){
             let ctx = this.map.getClient().getCtx();
@@ -127,6 +158,9 @@ export default class Node {
                 }else if(this.isGoalNode()){
                     // Set color for goal node
                     ctx.fillStyle = Client.colorFillGoal;
+                }else if(this.inPathList()){
+                    // Set color for closed node
+                    ctx.fillStyle = Client.colorFillPath;
                 }else if(this.inOpenList()){
                     // Set color for open node
                     ctx.fillStyle = Client.colorFillOpen;

@@ -39,6 +39,7 @@ export default class Client{
     public static readonly colorFillGoal:string = "#63c2ff";
     public static readonly colorFillOpen:string = "#7fbf7f";
     public static readonly colorFillClosed:string = "#ff7f7f";
+    public static readonly colorFillPath:string = "purple";
 
     // Text colors
     public static readonly colorTextNormal:string = "#000";
@@ -118,6 +119,7 @@ export default class Client{
         new HtmlButton(client,"Reset grid",false,function(){
             this.map.setGoalNode(null);
             this.map.setStartNode(null);
+            //this.map.getPathList().length = 0;
 
             for(let y:number=0; y<this.map.height; y++){
                 for(let x:number=0; x<this.map.getWidth(); x++){
