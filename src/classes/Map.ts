@@ -289,11 +289,8 @@ export default class Map {
             if(this.pathList.length==0){
                 this.pathList.push(this.goalNode);
             }else{
-                console.log('AH!');
-
                 //Last node of path
                 var lastNodeInPathList:Node = this.pathList[this.pathList.length-1];
-                console.log(lastNodeInPathList);
                 var neighbourWithLowestFCost = lastNodeInPathList.getNeighbourWithLowestFCost();
                 if(neighbourWithLowestFCost){
                     this.pathList.push(neighbourWithLowestFCost);

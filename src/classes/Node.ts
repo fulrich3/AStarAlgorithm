@@ -12,6 +12,8 @@ export default class Node {
     private walkable:boolean = true;
     private hover:boolean = false;
 
+    private displayMode = 1;
+
     constructor(map:Map,x:number,y:number,walkable:boolean){
         this.map = map;
         this.gridPosition.x = x;
@@ -35,17 +37,24 @@ export default class Node {
     }
 
     public getHCost(){
-        var result:number = 0;
+        if(this.inClosedList() || this.inOpenList()){
+            var result:number = 0;
 
-        if(this.map.getStartNode() && this.map.getGoalNode()){
-            result = Math.floor( pointDistance(this.gridPosition.x,this.gridPosition.y,this.map.getGoalNode().gridPosition.x,this.map.getGoalNode().gridPosition.y)*10);
+            if(this.map.getStartNode() && this.map.getGoalNode()){
+                result = Math.floor( pointDistance(this.gridPosition.x,this.gridPosition.y,this.map.getGoalNode().gridPosition.x,this.map.getGoalNode().gridPosition.y)*10);
+            }
+
+            return result;
+        }else{
+            return null;
         }
-
-        return result;
     }
 
     public getFCost(){
-        return this.getGCost() + this.getHCost();
+        if(this.inClosedList() || this.inOpenList())
+            return this.getGCost() + this.getHCost();
+        else
+            return null;
     }
 
     public getWalkable(){
@@ -73,17 +82,32 @@ export default class Node {
     public getNeighbourWithLowestFCost(){
         var neighbourNode:Node = null;
 
+        console.log("_");
+
         for(let y = this.getGridPosition().y-1 ; y<this.getGridPosition().y+2 ; y++){
             for(let x= this.getGridPosition().x-1; x<this.getGridPosition().x+2 ; x++){
-                // We don't want to check the current node + If x or y is out of bounds, continue
-                if(x==this.getGridPosition().x && y==this.getGridPosition().y && (x<0 || y<0 || x>this.map.getWidth()-1 || y>this.map.getHeight()-1) && !this.map.getNodeAtPosition(x,y).inClosedList() && this.map.getNodeAtPosition(x,y).getWalkable()!=true)
+                var currentNode = this.map.getNodeAtPosition(x,y);
+
+                // We don't want to check the current node + If x or y is out of bounds + the node needs to be in the closed list + it needs to be walkable
+                if((x==this.getGridPosition().x && y==this.getGridPosition().y)
+                || (x<0 || y<0 || x>this.map.getWidth()-1 || y>this.map.getHeight()-1) 
+                || !currentNode.inClosedList() 
+                || currentNode.inPathList() 
+                || currentNode.getWalkable()==false)
                     continue;
 
-                //console.log( this.map.getNodeAtPosition(x,y) );
-                
+                console.log(currentNode);
+
                 // Get best neighbour
-                if(!neighbourNode || this.map.getNodeAtPosition(x,y).getFCost() < neighbourNode.getFCost()){
-                    neighbourNode = this.map.getNodeAtPosition(x,y);
+                var currentNodeIsClosest:boolean;
+                
+                if(neighbourNode)
+                    currentNodeIsClosest = pointDistance(this.getGridPosition().x,this.getGridPosition().y,currentNode.getGridPosition().x,currentNode.getGridPosition().y) < pointDistance(this.getGridPosition().x , this.getGridPosition().y,neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y);
+                else
+                    currentNodeIsClosest = true;
+
+                if(!neighbourNode || (currentNode.getFCost() < neighbourNode.getFCost() && currentNodeIsClosest)){
+                    neighbourNode = currentNode;
                     if(neighbourNode===this.map.getStartNode()){
                         break;
                     }
@@ -94,6 +118,7 @@ export default class Node {
                 break;
         }
 
+        console.log(neighbourNode);
         return neighbourNode;
     }
 
@@ -195,17 +220,30 @@ export default class Node {
                     ctx.fillText("Goal" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
                 }
             }else{
-                if(this.inOpenList() || this.inClosedList()){
-                    ctx.font = "16px " + Client.FONT;
-                    // Display FCost
-                    ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
-
-                    ctx.font = "10px " + Client.FONT;
-                    // Display GCost
-                    ctx.fillText( (this.getGCost()).toString() , this.getWorldPosition().x + 8 , this.getWorldPosition().y + 8);
-
-                    // Display HCost
-                    ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + 8);
+                switch(this.displayMode){
+                    case 0 :
+                        if(this.inOpenList() || this.inClosedList()){
+                            ctx.font = "16px " + Client.FONT;
+                            // Display FCost
+                            if(this.getFCost())
+                                ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+        
+                            ctx.font = "10px " + Client.FONT;
+                            // Display GCost
+                            if(this.getGCost())
+                                ctx.fillText( (this.getGCost()).toString() , this.getWorldPosition().x + 8 , this.getWorldPosition().y + 8);
+        
+                            // Display HCost
+                            if(this.getHCost())
+                                ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + 8);
+                        }
+                        break;
+                    case 1 :
+                        ctx.font = "16px " + Client.FONT;
+                        // Display FCost
+                        if(this.getFCost())
+                            ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+                        break;
                 }
             }
 
