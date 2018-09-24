@@ -62,15 +62,25 @@ module.exports = {
             // CSS
             {
                 test:/\.(s*)css$/,
-                use: cssConfig
-                //use:['style-loader','css-loader', 'sass-loader']
+                use: cssConfig,
             },
-            //TSC
+            // TSC
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
             },
+            // IMAGES
+            {
+                test: /\.(png|jp(e*)g|svg)$/,  
+                use: [{
+                    loader: 'url-loader',
+                    options: { 
+                        limit: 8000, // Convert images < 8kb to base64 strings
+                        name: './img/[hash]-[name].[ext]',
+                    }
+                }]
+            }
         ]
     },
     resolve: {

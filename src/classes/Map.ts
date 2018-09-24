@@ -284,7 +284,9 @@ export default class Map {
                 this.moveNodeFromOpenToClosedList(nodeWithLowestFCost);
             }
         }
+        
         // If goal is found, we trace the path until we find the start node
+        /*
         else if(!this.pathList.includes(this.startNode)){
             if(this.pathList.length==0){
                 this.pathList.push(this.goalNode);
@@ -298,5 +300,6 @@ export default class Map {
                 }
             }
         }
+        */
     }
 }

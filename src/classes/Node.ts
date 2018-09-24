@@ -1,7 +1,8 @@
 import Map from './Map';
 import Client from './Client';
 
-import pointDistance from './Function';
+var functions = require('./functions');
+const imageSrc = require('../img/arrow.png');
 
 export default class Node {
     private map:Map; // Reference to the parent map
@@ -30,7 +31,7 @@ export default class Node {
         var result:number = 0;
 
         if(this.map.getStartNode() && this.map.getGoalNode()){
-            result = Math.floor( pointDistance(this.gridPosition.x,this.gridPosition.y,this.map.getStartNode().gridPosition.x,this.map.getStartNode().gridPosition.y)*10);
+            result = Math.floor( functions.pointDistance(this.gridPosition,this.map.getStartNode().gridPosition))*10;
         }
 
         return result;
@@ -41,7 +42,9 @@ export default class Node {
             var result:number = 0;
 
             if(this.map.getStartNode() && this.map.getGoalNode()){
-                result = Math.floor( pointDistance(this.gridPosition.x,this.gridPosition.y,this.map.getGoalNode().gridPosition.x,this.map.getGoalNode().gridPosition.y)*10);
+                result = Math.floor(
+                    functions.pointDistance(this.gridPosition,this.map.getGoalNode().gridPosition)*10
+                );
             }
 
             return result;
@@ -91,22 +94,22 @@ export default class Node {
                 // We don't want to check the current node + If x or y is out of bounds + the node needs to be in the closed list + it needs to be walkable
                 if((x==this.getGridPosition().x && y==this.getGridPosition().y)
                 || (x<0 || y<0 || x>this.map.getWidth()-1 || y>this.map.getHeight()-1) 
+                /*
                 || !currentNode.inClosedList() 
                 || currentNode.inPathList() 
+                */
                 || currentNode.getWalkable()==false)
                     continue;
-
-                console.log(currentNode);
-
+                
                 // Get best neighbour
                 var currentNodeIsClosest:boolean;
                 
                 if(neighbourNode)
-                    currentNodeIsClosest = pointDistance(this.getGridPosition().x,this.getGridPosition().y,currentNode.getGridPosition().x,currentNode.getGridPosition().y) < pointDistance(this.getGridPosition().x , this.getGridPosition().y,neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y);
+                    currentNodeIsClosest = functions.pointDistance(this.getGridPosition(),currentNode.getGridPosition()) < functions.pointDistance(this.getGridPosition(),neighbourNode.getGridPosition());
                 else
                     currentNodeIsClosest = true;
 
-                if(!neighbourNode || (currentNode.getFCost() < neighbourNode.getFCost() && currentNodeIsClosest)){
+                if(!neighbourNode || (currentNode.getFCost() < neighbourNode.getFCost() || currentNodeIsClosest)){
                     neighbourNode = currentNode;
                     if(neighbourNode===this.map.getStartNode()){
                         break;
@@ -239,10 +242,40 @@ export default class Node {
                         }
                         break;
                     case 1 :
-                        ctx.font = "16px " + Client.FONT;
+                        ctx.font = "10px " + Client.FONT;
+
+                        
+                        
                         // Display FCost
-                        if(this.getFCost())
-                            ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
+                        if(this.getFCost()){
+                            ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + 8);
+
+                            let neighbourWithLowestFCost:Node = this.getNeighbourWithLowestFCost();
+
+                            // Display image
+                            var img = new Image();
+                            img.onload = function() {
+                                ctx.save();
+
+                                //ctx.translate(this.getWorldPosition().x + this.map.getCellSize()/2 - img.width/2 , this.getWorldPosition().y + this.map.getCellSize()/2 - img.height/2)
+                               
+                                let drawAngle:number = functions.pointDistance(this,neighbourWithLowestFCost);
+                                let arrowPosition = {
+                                    x: this.getWorldPosition().x + this.map.getCellSize()/2 - img.width/2,
+                                    y: this.getWorldPosition().y + this.map.getCellSize()/2 - img.height/2,
+                                };
+
+                                ctx.translate(arrowPosition.x,arrowPosition.y);
+                                ctx.rotate(drawAngle*Math.PI/180);
+                                ctx.translate(-arrowPosition.x,-arrowPosition.y);
+
+                                ctx.drawImage(img, arrowPosition.x , arrowPosition.y );
+                                ctx.drawImage(img, arrowPosition.x , arrowPosition.y );
+                                
+                                ctx.restore();
+                            }.bind(this);
+                            img.src = imageSrc;
+                        }
                         break;
                 }
             }
