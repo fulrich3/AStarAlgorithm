@@ -182,17 +182,12 @@ export default class Map {
     Algorithms
     ==================
     */
-    public publicAStarExecuteNextStep(){
-        // If goal is not found, we try to find it first....
+    public aStarExecuteNextStep(){
 
+        // If goal is not found, we try to find it first....
         if(!this.getClosedList().includes(this.getGoalNode())){
             if(!this.startNode || !this.goalNode){
                 console.log("No start or goal node!");
-                return;
-            }
-
-            if(this.getClosedList().includes(this.getGoalNode())){
-                console.log("The goal node has been found! No need to continue.");
                 return;
             }
 
@@ -202,86 +197,81 @@ export default class Map {
             }
 
             // We select the Node with the lowest FCost
-            var nodeWithLowestFCost:Node = null;
+            var openNodeWithLowestFCost:Node;
 
             this.openList.forEach((currentNode,index) => {
-                if(index==0 || currentNode.getFCost()<nodeWithLowestFCost.getFCost()){
-                    nodeWithLowestFCost = this.openList[index];
+                if(index==0 || currentNode.getFCost()<openNodeWithLowestFCost.getFCost()){
+                    openNodeWithLowestFCost = this.openList[index];
                 }
             });
 
-            if(nodeWithLowestFCost){
-            // Add every possible neighbours of the open list to the open list
-                for(let y = nodeWithLowestFCost.getGridPosition().y-1 ; y<nodeWithLowestFCost.getGridPosition().y+2 ; y++){
-                    for(let x= nodeWithLowestFCost.getGridPosition().x-1; x<nodeWithLowestFCost.getGridPosition().x+2 ; x++){
-                        // We don't want to check the current node
-                        if(x==nodeWithLowestFCost.getGridPosition().x && y==nodeWithLowestFCost.getGridPosition().y)
-                            continue;
-                        
-                        // If x or y is out of bounds, continue
-                        if(x<0 || y<0 || x>this.width-1 || y>this.height-1)
-                            continue;
+            if(openNodeWithLowestFCost){
+                // Add every possible neighbours of the open list to the open list
+                let neighbours = openNodeWithLowestFCost.getNeighbours();
 
-                        // Get current neighbour
-                        let neighbourNode:Node = this.getNodeAtPosition(x,y);
+                for(var i=0; i<neighbours.length;i++){
+                    // Get current neighbour
+                    let neighbour:Node = neighbours[i];
 
-                        var xx:number = nodeWithLowestFCost.getGridPosition().x - x;
-                        var yy:number = nodeWithLowestFCost.getGridPosition().y - y;
-                        
-                        if(yy!=0){
-                            if(yy==-1){
-                                if(xx!=0){
-                                    if(this.getNodeAtPosition(neighbourNode.getGridPosition().x+xx,neighbourNode.getGridPosition().y+yy).getWalkable())
+                    if(neighbour.inClosedList() || neighbour.inOpenList() || neighbour.getWalkable()==false)
+                        continue;
 
-                                    if(xx==-1){
-                                        // Top left corner
-                                        // If corner walkable
-                                        if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y-1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x-1,neighbourNode.getGridPosition().y).getWalkable())
-                                            continue;
-                                    }
-                                    else
-                                    if(xx==1){
-                                        // Top right corner
-                                        // If corner walkable
-                                        if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y-1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x+1,neighbourNode.getGridPosition().y).getWalkable())
-                                            continue;
-                                    }
+                    var xx:number = openNodeWithLowestFCost.getGridPosition().x - neighbour.getGridPosition().x;
+                    var yy:number = openNodeWithLowestFCost.getGridPosition().y - neighbour.getGridPosition().y;
+
+                    // Corners check
+                    if(yy!=0){
+                        if(yy==-1){
+                            if(xx!=0){
+                                if(this.getNodeAtPosition(neighbour.getGridPosition().x+xx,neighbour.getGridPosition().y+yy).getWalkable())
+
+                                if(xx==-1){
+                                    // Top left corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbour.getGridPosition().x,neighbour.getGridPosition().y-1).getWalkable() && !this.getNodeAtPosition(neighbour.getGridPosition().x-1,neighbour.getGridPosition().y).getWalkable())
+                                        continue;
                                 }
-                            }
-                            else
-                            if(yy==1){
-                                if(xx!=0){
-                                    if(xx==-1){
-                                        // Bottom left corner
-                                        // If corner walkable
-                                        if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y+1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x-1,neighbourNode.getGridPosition().y).getWalkable())
-                                            continue;
-                                    }
-                                    else
-                                    if(xx==1){
-                                        // Bottom right corner
-                                        // If corner walkable
-                                        if(!this.getNodeAtPosition(neighbourNode.getGridPosition().x,neighbourNode.getGridPosition().y+1).getWalkable() && !this.getNodeAtPosition(neighbourNode.getGridPosition().x+1,neighbourNode.getGridPosition().y).getWalkable())
-                                            continue;
-                                    }
+                                else
+                                if(xx==1){
+                                    // Top right corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbour.getGridPosition().x,neighbour.getGridPosition().y-1).getWalkable() && !this.getNodeAtPosition(neighbour.getGridPosition().x+1,neighbour.getGridPosition().y).getWalkable())
+                                        continue;
                                 }
                             }
                         }
-
-                        // Check if current node is the goal node.
-                        if(neighbourNode == this.getGoalNode()){
-                            console.log("Path found!!");
+                        else
+                        if(yy==1){
+                            if(xx!=0){
+                                if(xx==-1){
+                                    // Bottom left corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbour.getGridPosition().x,neighbour.getGridPosition().y+1).getWalkable() && !this.getNodeAtPosition(neighbour.getGridPosition().x-1,neighbour.getGridPosition().y).getWalkable())
+                                        continue;
+                                }
+                                else
+                                if(xx==1){
+                                    // Bottom right corner
+                                    // If corner walkable
+                                    if(!this.getNodeAtPosition(neighbour.getGridPosition().x,neighbour.getGridPosition().y+1).getWalkable() && !this.getNodeAtPosition(neighbour.getGridPosition().x+1,neighbour.getGridPosition().y).getWalkable())
+                                        continue;
+                                }
+                            }
                         }
+                    }
 
-                        if(neighbourNode.inClosedList() || neighbourNode.inOpenList() || neighbourNode.getWalkable()==false)
-                            continue;
-                        
-                        this.addNodeToOpenList(neighbourNode);
-                        neighbourNode.draw();
+                    this.addNodeToOpenList(neighbour);
+
+                    neighbour.draw();
+
+                    // Check if current node is the goal node.
+                    if(neighbour === this.getGoalNode()){
+                        console.log("Path found!!");
+                        break;
                     }
                 }
 
-                this.moveNodeFromOpenToClosedList(nodeWithLowestFCost);
+                this.moveNodeFromOpenToClosedList(openNodeWithLowestFCost);
             }
         }
         

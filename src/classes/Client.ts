@@ -53,6 +53,9 @@ export default class Client{
     // Font
     public static readonly FONT:string = "Courrier New";
 
+    // Node display mode
+    public static readonly NODE_DISPLAY_MODE:number = 0;
+
     constructor(map:Map,parentHtmlElement:HTMLElement){
         this.map = map;
 
@@ -131,7 +134,7 @@ export default class Client{
 
         this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
             
-            this.map.publicAStarExecuteNextStep();
+            this.map.aStarExecuteNextStep();
         }.bind(this)));
     }
 
