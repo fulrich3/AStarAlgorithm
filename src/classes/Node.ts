@@ -4,6 +4,14 @@ import Client from './Client';
 var functions = require('./functions');
 const imageSrc = require('../img/arrow.png');
 
+console.log( functions.pointAngleDeg({
+    x:0,
+    y:0,
+},{
+    x:0,
+    y:-1,
+}) );
+
 export default class Node {
     private map:Map; // Reference to the parent map
     private gridPosition = { // Position in the grid
@@ -91,6 +99,8 @@ export default class Node {
 
                 if (this===currentNode)
                     continue;
+
+                console.log( functions.pointAngleDeg(this.getGridPosition(),currentNode.getGridPosition()) );
                 
                 result.push(currentNode);
             }
@@ -260,22 +270,18 @@ export default class Node {
                             img.onload = function() {
                                 ctx.save();
 
-                                let drawAngle:number = functions.pointAngleDeg(this.getGridPosition(),neighbourWithLowestFCost.getGridPosition());
-                                console.log(drawAngle);
+                                let drawAngle:number = functions.pointAngleRad(this.getGridPosition(),neighbourWithLowestFCost.getGridPosition());
+                                
                                 let arrowPosition = {
                                     x: this.getWorldPosition().x + this.map.getCellSize()/2,
                                     y: this.getWorldPosition().y + this.map.getCellSize()/2,
                                 };
-                                
-                                console.log(drawAngle);
 
                                 ctx.translate(arrowPosition.x,arrowPosition.y);
-                                //ctx.rotate(drawAngle*Math.PI/180);
                                 ctx.rotate(drawAngle);
-
                                 ctx.translate(-arrowPosition.x,-arrowPosition.y);
 
-                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.width/2);
+                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.height/2);
                                 
                                 ctx.restore();
                             }.bind(this);

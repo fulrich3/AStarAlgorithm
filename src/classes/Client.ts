@@ -54,7 +54,7 @@ export default class Client{
     public static readonly FONT:string = "Courrier New";
 
     // Node display mode
-    public static readonly NODE_DISPLAY_MODE:number = 0;
+    public static readonly NODE_DISPLAY_MODE:number = 1;
 
     constructor(map:Map,parentHtmlElement:HTMLElement){
         this.map = map;
