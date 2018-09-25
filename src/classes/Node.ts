@@ -84,7 +84,7 @@ export default class Node {
         for(let y = this.getGridPosition().y-1 ; y<this.getGridPosition().y+2 ; y++){
             for(let x= this.getGridPosition().x-1; x<this.getGridPosition().x+2 ; x++){
             // We don't want to check the current node + If x or y is out of bounds + the node needs to be in the closed list + it needs to be walkable
-                if(x<0 || y<0 || x>this.map.getWidth() || y>this.map.getHeight())
+                if(x<0 || y<0 || x>this.map.getWidth()-1 || y>this.map.getHeight()-1)
                     continue;
 
                 let currentNode = this.map.getNodeAtPosition(x,y);
