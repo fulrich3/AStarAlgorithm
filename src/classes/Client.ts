@@ -133,7 +133,6 @@ export default class Client{
         }.bind(this));
 
         this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
-            
             this.map.aStarExecuteNextStep();
         }.bind(this)));
     }

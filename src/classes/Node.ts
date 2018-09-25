@@ -4,14 +4,6 @@ import Client from './Client';
 var functions = require('./functions');
 const imageSrc = require('../img/arrow.png');
 
-console.log( functions.pointAngleDeg({
-    x:0,
-    y:0,
-},{
-    x:0,
-    y:-1,
-}) );
-
 export default class Node {
     private map:Map; // Reference to the parent map
     private gridPosition = { // Position in the grid
@@ -20,6 +12,8 @@ export default class Node {
     };
     private walkable:boolean = true;
     private hover:boolean = false;
+    private gCost:number = 0;
+    private parent:Node = null;
 
     constructor(map:Map,x:number,y:number,walkable:boolean){
         this.map = map;
@@ -34,21 +28,32 @@ export default class Node {
 
     // Accessors
     public getGCost(){
-        var result:number = 0;
+        /*
+        var closedNodeWithLowestFCost:Node = null;
 
+
+        this.map.getClosedList().forEach((currentNode,index) => {
+            if(index==0 || currentNode.getFCost()<closedNodeWithLowestFCost.getFCost()){
+                closedNodeWithLowestFCost = currentNode;
+            }
+        });
+        */
+
+        /*
         if(this.map.getStartNode() && this.map.getGoalNode()){
             result = Math.floor( functions.pointDistance(this.getGridPosition(),this.map.getStartNode().getGridPosition())*10);
         }
+        */
 
-        return result;
+        return this.gCost;
     }
 
     public getHCost(){
         if(this.inClosedList() || this.inOpenList()){
-            var result:number = 0;
+            var result:number = null;
 
             if(this.map.getStartNode() && this.map.getGoalNode()){
-                result = Math.floor(functions.pointDistance(this.getGridPosition(),this.map.getGoalNode().getGridPosition())*10);
+                result = this.getDistanceToNode(this.map.getGoalNode());
             }
 
             return result;
@@ -100,8 +105,6 @@ export default class Node {
                 if (this===currentNode)
                     continue;
 
-                console.log( functions.pointAngleDeg(this.getGridPosition(),currentNode.getGridPosition()) );
-                
                 result.push(currentNode);
             }
         }
@@ -109,7 +112,7 @@ export default class Node {
         return result;
     }
 
-    public getNeighbourWithLowestFCost(){
+    public getPreviousNeighbour(){
         var neighbourNode:Node = null;
 
         let neighbours = this.getNeighbours();
@@ -118,19 +121,13 @@ export default class Node {
             var currentNode = neighbours[i];
 
             // We don't want to check the current node + If x or y is out of bounds + the node needs to be in the closed list + it needs to be walkable
-            if(currentNode.getWalkable()==false)
+            if(currentNode.getWalkable()==false || !currentNode.inClosedList())
                 continue;
 
             // Get best neighbour
-            var currentNodeIsClosest:boolean;
-
-            if(neighbourNode)
-                currentNodeIsClosest = functions.pointDistance(this.getGridPosition(),currentNode.getGridPosition()) < functions.pointDistance(this.getGridPosition(),neighbourNode.getGridPosition());
-            else
-                currentNodeIsClosest = true;
-
-            if(!neighbourNode || (currentNode.getFCost() < neighbourNode.getFCost() || currentNodeIsClosest)){
+            if(!neighbourNode || (currentNode===this.map.getStartNode() || neighbourNode.getFCost() < currentNode.getFCost() )){
                 neighbourNode = currentNode;
+
                 if(neighbourNode===this.map.getStartNode()){
                     break;
                 }
@@ -140,7 +137,22 @@ export default class Node {
         return neighbourNode;
     }
 
+    public getDistanceToNode(node:Node){
+        var dstX:number = Math.abs(this.getGridPosition().x - node.getGridPosition().x);
+        var dstY:number = Math.abs(this.getGridPosition().y - node.getGridPosition().y);
+
+        return dstX>dstY ? 14*dstY + 10*(dstX-dstY) : 14*dstX + 10*(dstY-dstX);
+    }
+
+    public getParent(){
+        return this.parent;
+    }
+
     // Mutators
+    public setGCost(value:number){
+        this.gCost = value;
+    }
+
     public setWalkable(value:boolean){
         if(this.isStartNode() || this.isGoalNode())
             return;
@@ -158,6 +170,10 @@ export default class Node {
             this.draw();
         }
     }
+
+    public setParent(value:Node){
+        this.parent = value;
+    };
 
     // Other
     public isStartNode(){
@@ -225,6 +241,10 @@ export default class Node {
                 ctx.strokeStyle = Client.colorStrokeHover;
             }
 
+            // Draw stroke of node
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
             //Draw text
             ctx.fillStyle = Client.colorTextNormal;
             ctx.textBaseline="middle";
@@ -252,8 +272,24 @@ export default class Node {
                                 ctx.fillText( (this.getGCost()).toString() , this.getWorldPosition().x + 8 , this.getWorldPosition().y + 8);
         
                             // Display HCost
-                            if(this.getHCost())
-                                ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + 8);
+                            if(this.getHCost()){
+                                ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + 4);
+
+                                let drawAngle:number = functions.pointAngleRad(this.getGridPosition(),this.getPreviousNeighbour().getGridPosition());
+                                
+                                let arrowPosition = {
+                                    x: this.getWorldPosition().x + this.map.getCellSize()/2,
+                                    y: this.getWorldPosition().y + this.map.getCellSize()/2,
+                                };
+
+                                ctx.translate(arrowPosition.x,arrowPosition.y);
+                                ctx.rotate(drawAngle);
+                                ctx.translate(-arrowPosition.x,-arrowPosition.y);
+
+                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.height/2);
+                                
+                                ctx.restore();
+                            }
                         }
                         break;
                     case 1 :
@@ -263,14 +299,14 @@ export default class Node {
                         if(this.getFCost()){
                             ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + 8);
 
-                            let neighbourWithLowestFCost:Node = this.getNeighbourWithLowestFCost();
+                            let neighbourWithLowestFCost:Node = this.getPreviousNeighbour();
 
                             // Display image
                             var img = new Image();
                             img.onload = function() {
                                 ctx.save();
 
-                                let drawAngle:number = functions.pointAngleRad(this.getGridPosition(),neighbourWithLowestFCost.getGridPosition());
+                                let drawAngle:number = functions.pointAngleRad(this.getGridPosition(),this.getParent().getGridPosition());
                                 
                                 let arrowPosition = {
                                     x: this.getWorldPosition().x + this.map.getCellSize()/2,
@@ -286,14 +322,18 @@ export default class Node {
                                 ctx.restore();
                             }.bind(this);
                             img.src = imageSrc;
-                        }
+
+                            // Display GCost
+                            if(this.getGCost())
+                                ctx.fillText( (this.getGCost()).toString() , this.getWorldPosition().x + 8 , this.getWorldPosition().y + this.map.getCellSize()-8 );
+
+                            // Display HCost
+                            if(this.getHCost())
+                                ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + this.map.getCellSize()-8 );
+                            }
                         break;
                 }
             }
-
-            // Draw stroke of node
-            ctx.lineWidth = 2;
-            ctx.stroke();
 
             ctx.closePath();
         }
