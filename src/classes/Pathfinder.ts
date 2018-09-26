@@ -63,7 +63,7 @@ export default class Pathfinder {
         return this.grid[y][x];
     }
 
-    public getClient(){
+    public getHtmlPathfinderEditor(){
         return this.htmlPathfinderEditor;
     }
 
@@ -94,13 +94,30 @@ export default class Pathfinder {
     public getClosedList(){
         return this.closedList;
     }
-
+    
     public getPathList(){
         return this.pathList;
     }
 
     public isPathFound(){
-        return this.getStartNode() === this.getPathList()[this.getPathList().length-1]
+        return this.getStartNode() === this.pathList[this.pathList.length-1]
+    }
+
+    public getPath(){
+        var result:any = [];
+
+        while(!this.isPathFound() && this.getOpenList().length > 0){
+            this.aStarExecuteNextStep();
+        }
+        
+        this.getPathList().forEach(function(node) {
+            result.push({
+                x: node.getGridPosition().x,
+                y: node.getGridPosition().y,
+            });
+        });
+
+        return result;
     }
 
     // Mutators
@@ -136,10 +153,18 @@ export default class Pathfinder {
         }
     }
 
-    public appendHtmlEditorToElement(element:HTMLElement){
-        // Set htmlPathfinderEditor
-        this.htmlPathfinderEditor = new HtmlPathfinderEditor(this,element);
-        this.htmlPathfinderEditor.draw();
+    public setStartPoint(object:any){
+        let startNode = this.getNodeAtPosition(object.x,object.y);
+        this.setStartNode(startNode);
+    }
+
+    public setGoalPoint(object:any){
+        let goalNode = this.getNodeAtPosition(object.x,object.y);
+        this.setGoalNode(goalNode);
+    }
+
+    public setHtmlPathfinderEditor(htmlPathfinderEditor:HtmlPathfinderEditor){
+        this.htmlPathfinderEditor = htmlPathfinderEditor;
     }
 
     public addNodeToOpenList(node:Node){
@@ -278,12 +303,16 @@ export default class Pathfinder {
         // If goal is found, we trace the path until we find the start node
         else if(!this.pathList.includes(this.startNode)){
             if(this.pathList.length==0){
-                this.pathList.push(this.goalNode);
-            }else{
+                this.pathList.push( this.goalNode );
+            }else{  
                 var nodeAtTopOfStack:Node = this.pathList[this.pathList.length-1];
                 this.pathList.push( nodeAtTopOfStack.getParent());
+
+                /*
+                var nodeAtTopOfStack:Node = this.pathList[0];
+                this.pathList.unshift( nodeAtTopOfStack.getParent());
+                */
             }
         }
-        
     }
 }

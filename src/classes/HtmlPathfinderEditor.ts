@@ -6,7 +6,7 @@ var functions = require('./functions');
 const imgArrow = require('../img/arrow.png');
 
 export default class HtmlPathfinderEditor{
-    private map:Pathfinder;
+    private pathfinder:Pathfinder;
     private mouseX:number = 0;
     private mouseY:number = 0;
     private nodeFocused:Node;
@@ -20,7 +20,6 @@ export default class HtmlPathfinderEditor{
     private ctx: CanvasRenderingContext2D;
     private parentHtmlElement: HTMLElement;
 
-
     // Editor inputs list
     private inputElementsList:Array<any> = [];
 
@@ -31,26 +30,26 @@ export default class HtmlPathfinderEditor{
     */
 
     // Stroke colors
-    public static readonly colorStroke:string = "#111";
-    public static readonly colorStrokeHover:string = "#AAA";
+    private static readonly colorStroke:string = "#111";
+    private static readonly colorStrokeHover:string = "#AAA";
 
     // Fill colors
-    public static readonly colorFillNormal:string = "#fff";
-    public static readonly colorFillSolid:string = "#161616";
-    public static readonly colorFillStart:string = "#63c2ff";
-    public static readonly colorFillGoal:string = "#63c2ff";
-    public static readonly colorFillOpen:string = "#7fbf7f";
-    public static readonly colorFillClosed:string = "#ff7f7f";
-    public static readonly colorFillPath:string = "purple";
+    private static readonly colorFillNormal:string = "#fff";
+    private static readonly colorFillSolid:string = "#161616";
+    private static readonly colorFillStart:string = "#63c2ff";
+    private static readonly colorFillGoal:string = "#63c2ff";
+    private static readonly colorFillOpen:string = "#7fbf7f";
+    private static readonly colorFillClosed:string = "#ff7f7f";
+    private static readonly colorFillPath:string = "purple";
 
     // Text colors
-    public static readonly colorTextNormal:string = "#000";
+    private static readonly colorTextNormal:string = "#000";
 
     // Edit modes
-    public static readonly EDIT_MODE_EMPTY:number = 0;
-    public static readonly EDIT_MODE_WALKABLE:number = 1;
-    public static readonly EDIT_MODE_START:number = 2;
-    public static readonly EDIT_MODE_GOAL:number = 3;
+    private static readonly EDIT_MODE_EMPTY:number = 0;
+    private static readonly EDIT_MODE_WALKABLE:number = 1;
+    private static readonly EDIT_MODE_START:number = 2;
+    private static readonly EDIT_MODE_GOAL:number = 3;
 
     // Font
     public static readonly FONT:string = "Courrier New";
@@ -58,32 +57,35 @@ export default class HtmlPathfinderEditor{
     // Node display mode
     public static readonly NODE_DISPLAY_MODE:number = 2;
 
-    constructor(map:Pathfinder,parentHtmlElement:HTMLElement){
-        this.map = map;
+    constructor(pathfinder:Pathfinder,parentHtmlElement:HTMLElement){
+        this.pathfinder = pathfinder;
 
         // Create canvas element
         this.canvas = document.createElement("canvas");
         this.ctx = this.canvas.getContext("2d");
         this.canvas.style.backgroundColor = "gray";
-        this.canvas.width = this.map.getWidth() * this.map.getCellSize();
-        this.canvas.height = this.map.getHeight() * this.map.getCellSize();
+        this.canvas.width = this.pathfinder.getWidth() * this.pathfinder.getCellSize();
+        this.canvas.height = this.pathfinder.getHeight() * this.pathfinder.getCellSize();
 
         // Selection of the canvas's parent HTML element
         this.parentHtmlElement = parentHtmlElement;
 
         this.init();
+        this.draw();
     }
 
     init(){
         let htmlPathfinderEditor = this;
+
+        this.pathfinder.setHtmlPathfinderEditor(htmlPathfinderEditor);
 
         // Append canvas to the selected HTML element
         this.parentHtmlElement.appendChild(this.canvas);
 
         // Listener for mouse move event
         window.addEventListener("mousemove", (e) => {
-            this.mouseX = e.clientX - this.canvas.offsetLeft;
-            this.mouseY = e.clientY - this.canvas.offsetTop;
+            this.mouseX = e.clientX - this.canvas.offsetLeft + window.pageXOffset;
+            this.mouseY = e.clientY - this.canvas.offsetTop + window.pageYOffset;
 
             this.mouseMove();
         });
@@ -117,12 +119,12 @@ export default class HtmlPathfinderEditor{
 
         // Reset grid button
         new HtmlButton(htmlPathfinderEditor,"Reset grid",false,function(){
-            this.map.setGoalNode(null);
-            this.map.setStartNode(null);
+            this.pathfinder.setGoalNode(null);
+            this.pathfinder.setStartNode(null);
 
-            for(let y:number=0; y<this.map.height; y++){
-                for(let x:number=0; x<this.map.getWidth(); x++){
-                    let currentNode = this.map.grid[y][x];
+            for(let y:number=0; y<this.pathfinder.height; y++){
+                for(let x:number=0; x<this.pathfinder.getWidth(); x++){
+                    let currentNode = this.pathfinder.grid[y][x];
                     currentNode.setWalkable(true);
                 }
             }
@@ -131,21 +133,18 @@ export default class HtmlPathfinderEditor{
         }.bind(this));
 
         this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Execute",false,function(){
-            while(!this.map.isPathFound() && this.map.openList.length > 0){
-                this.map.aStarExecuteNextStep();
-            }
+            this.pathfinder.getPath();
             this.drawOpenAndClosedList();
         }.bind(this)));
 
         this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Next step",false,function(){
-            this.map.aStarExecuteNextStep();
-
+            this.pathfinder.aStarExecuteNextStep();
             // Draw every open & closed nodes
             this.drawOpenAndClosedList();
         }.bind(this)));
     }
 
-    // Accessor
+    // Accessors
     public getCtx(){
         return this.ctx;
     }
@@ -165,12 +164,12 @@ export default class HtmlPathfinderEditor{
     // Will be executed each frame the mouse position has changed
     private mouseMove(){
         // We first check if the cursor is inside the canvas area
-        this.cursorOutOfBounds = !(this.mouseX>=0 && this.mouseX<this.map.getWidth()*this.map.getCellSize() && this.mouseY>=0 && this.mouseY<this.map.getHeight()*this.map.getCellSize());
+        this.cursorOutOfBounds = !(this.mouseX>=0 && this.mouseX<this.pathfinder.getWidth()*this.pathfinder.getCellSize() && this.mouseY>=0 && this.mouseY<this.pathfinder.getHeight()*this.pathfinder.getCellSize());
 
         // If the cursor is inside the canvas area
         if(!this.cursorOutOfBounds){
             // We set the hovered node
-            let hoveredNode = this.map.getNodeAtPosition(Math.floor(this.mouseX/this.map.getCellSize()),Math.floor(this.mouseY/this.map.getCellSize()));
+            let hoveredNode = this.pathfinder.getNodeAtPosition(Math.floor(this.mouseX/this.pathfinder.getCellSize()),Math.floor(this.mouseY/this.pathfinder.getCellSize()));
 
             // If the hovered node isn't the focused one, we don't do anything
             if(hoveredNode && hoveredNode!=this.nodeFocused){
@@ -227,17 +226,17 @@ export default class HtmlPathfinderEditor{
                     break;
                 case HtmlPathfinderEditor.EDIT_MODE_START:
                     // We get the current position of the start node to erase it later
-                    let oldStartNode:Node = this.map.getNodeAtPosition(this.map.getStartNode().getGridPosition().x,this.map.getStartNode().getGridPosition().y);
+                    let oldStartNode:Node = this.pathfinder.getNodeAtPosition(this.pathfinder.getStartNode().getGridPosition().x,this.pathfinder.getStartNode().getGridPosition().y);
                     // We set the new start node
-                    this.map.setStartNode(this.nodeFocused);
+                    this.pathfinder.setStartNode(this.nodeFocused);
                     // Erase old start node
                     this.drawNode(oldStartNode);
                     break;
                 case HtmlPathfinderEditor.EDIT_MODE_GOAL:
                     // We get the current position of the goal node to erase it later
-                    let oldGoalNode:Node = this.map.getNodeAtPosition(this.map.getGoalNode().getGridPosition().x,this.map.getGoalNode().getGridPosition().y);
+                    let oldGoalNode:Node = this.pathfinder.getNodeAtPosition(this.pathfinder.getGoalNode().getGridPosition().x,this.pathfinder.getGoalNode().getGridPosition().y);
                     // We set the new goal node
-                    this.map.setGoalNode(this.nodeFocused);
+                    this.pathfinder.setGoalNode(this.nodeFocused);
                     // Erase old goal node
                     this.drawNode(oldGoalNode);
                     break;
@@ -250,31 +249,31 @@ export default class HtmlPathfinderEditor{
 
     // Draw every open & closed nodes
     public drawOpenAndClosedList(){
-        this.map.getOpenList().forEach(function(node:Node) {
+        this.pathfinder.getOpenList().forEach(function(node:Node) {
             this.drawNode(node);
         }.bind(this));
 
-        this.map.getClosedList().forEach(function(node:Node,index:number) {
+        this.pathfinder.getClosedList().forEach(function(node:Node,index:number) {
             this.drawNode(node);
         }.bind(this));
     }
 
     public draw(){
-        for(let y:number=0; y<this.map.getHeight(); y++){
-            for(let x:number=0; x<this.map.getWidth(); x++){
-                let currentNode = this.map.getNodeAtPosition(x,y);
+        for(let y:number=0; y<this.pathfinder.getHeight(); y++){
+            for(let x:number=0; x<this.pathfinder.getWidth(); x++){
+                let currentNode = this.pathfinder.getNodeAtPosition(x,y);
                 this.drawNode(currentNode);
             }
         }
     }
 
     public drawNode(node:Node){
-        if(this.map.getClient()){
-            let ctx = this.map.getClient().getCtx();
+        if(this.pathfinder.getHtmlPathfinderEditor()){
+            let ctx = this.pathfinder.getHtmlPathfinderEditor().getCtx();
 
             ctx.beginPath();
             // Set draw area for the node
-            ctx.rect(node.getWorldPosition().x,node.getWorldPosition().y,this.map.getCellSize(),this.map.getCellSize());
+            ctx.rect(node.getWorldPosition().x,node.getWorldPosition().y,this.pathfinder.getCellSize(),this.pathfinder.getCellSize());
 
             // Set fill color
             if(!node.getWalkable()){
@@ -282,7 +281,6 @@ export default class HtmlPathfinderEditor{
                 ctx.fillStyle = HtmlPathfinderEditor.colorFillSolid;
             }else{
                 // Walkable node
-                
                 if(node.inPathList()){
                     // Set color for closed node
                     ctx.fillStyle = HtmlPathfinderEditor.colorFillPath;
@@ -325,9 +323,9 @@ export default class HtmlPathfinderEditor{
             if(node.isStartNode() || node.isGoalNode()){
                 ctx.font = "13px " + HtmlPathfinderEditor.FONT;
                 if(node.isStartNode()){
-                    ctx.fillText("Start" , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
+                    ctx.fillText("Start" , node.getWorldPosition().x + this.pathfinder.getCellSize()/2 , node.getWorldPosition().y + this.pathfinder.getCellSize()/2);
                 }else if(node.isGoalNode()){
-                    ctx.fillText("Goal" , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
+                    ctx.fillText("Goal" , node.getWorldPosition().x + this.pathfinder.getCellSize()/2 , node.getWorldPosition().y + this.pathfinder.getCellSize()/2);
                 }
             }else{
                 switch(HtmlPathfinderEditor.NODE_DISPLAY_MODE){
@@ -336,7 +334,7 @@ export default class HtmlPathfinderEditor{
                             ctx.font = "16px " + HtmlPathfinderEditor.FONT;
                             // Display FCost
                             if(node.getFCost())
-                                ctx.fillText((node.getFCost()).toString() , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
+                                ctx.fillText((node.getFCost()).toString() , node.getWorldPosition().x + this.pathfinder.getCellSize()/2 , node.getWorldPosition().y + this.pathfinder.getCellSize()/2);
         
                             ctx.font = "10px " + HtmlPathfinderEditor.FONT;
                             // Display GCost
@@ -345,13 +343,13 @@ export default class HtmlPathfinderEditor{
         
                             // Display HCost
                             if(node.getHCost()){
-                                ctx.fillText( (node.getHCost()).toString() , node.getWorldPosition().x + this.map.getCellSize() - 8 , node.getWorldPosition().y + 4);
+                                ctx.fillText( (node.getHCost()).toString() , node.getWorldPosition().x + this.pathfinder.getCellSize() - 8 , node.getWorldPosition().y + 4);
 
                                 let drawAngle:number = functions.pointAngleRad(node.getGridPosition(),node.getPreviousNeighbour().getGridPosition());
                                 
                                 let arrowPosition = {
-                                    x: node.getWorldPosition().x + this.map.getCellSize()/2,
-                                    y: node.getWorldPosition().y + this.map.getCellSize()/2,
+                                    x: node.getWorldPosition().x + this.pathfinder.getCellSize()/2,
+                                    y: node.getWorldPosition().y + this.pathfinder.getCellSize()/2,
                                 };
 
                                 ctx.translate(arrowPosition.x,arrowPosition.y);
@@ -369,7 +367,7 @@ export default class HtmlPathfinderEditor{
 
                         // Display FCost
                         if(node.getFCost()){
-                            ctx.fillText((node.getFCost()).toString() , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + 8);
+                            ctx.fillText((node.getFCost()).toString() , node.getWorldPosition().x + this.pathfinder.getCellSize()/2 , node.getWorldPosition().y + 8);
 
                             // Display image
                             var img = new Image();
@@ -379,8 +377,8 @@ export default class HtmlPathfinderEditor{
                                 let drawAngle:number = functions.pointAngleRad(node.getGridPosition(),node.getParent().getGridPosition());
                                 
                                 let arrowPosition = {
-                                    x: node.getWorldPosition().x + this.map.getCellSize()/2,
-                                    y: node.getWorldPosition().y + this.map.getCellSize()/2,
+                                    x: node.getWorldPosition().x + this.pathfinder.getCellSize()/2,
+                                    y: node.getWorldPosition().y + this.pathfinder.getCellSize()/2,
                                 };
 
                                 ctx.translate(arrowPosition.x,arrowPosition.y);
@@ -395,11 +393,11 @@ export default class HtmlPathfinderEditor{
 
                             // Display GCost
                             if(node.getGCost())
-                                ctx.fillText( (node.getGCost()).toString() , node.getWorldPosition().x + 8 , node.getWorldPosition().y + this.map.getCellSize()-8 );
+                                ctx.fillText( (node.getGCost()).toString() , node.getWorldPosition().x + 8 , node.getWorldPosition().y + this.pathfinder.getCellSize()-8 );
 
                             // Display HCost
                             if(node.getHCost())
-                                ctx.fillText( (node.getHCost()).toString() , node.getWorldPosition().x + this.map.getCellSize() - 8 , node.getWorldPosition().y + this.map.getCellSize()-8 );
+                                ctx.fillText( (node.getHCost()).toString() , node.getWorldPosition().x + this.pathfinder.getCellSize() - 8 , node.getWorldPosition().y + this.pathfinder.getCellSize()-8 );
                             }
                         break;
                     case 2 :
@@ -412,8 +410,8 @@ export default class HtmlPathfinderEditor{
                                 let drawAngle:number = functions.pointAngleRad(node.getGridPosition(),node.getParent().getGridPosition());
                                 
                                 let arrowPosition = {
-                                    x: node.getWorldPosition().x + this.map.getCellSize()/2,
-                                    y: node.getWorldPosition().y + this.map.getCellSize()/2,
+                                    x: node.getWorldPosition().x + this.pathfinder.getCellSize()/2,
+                                    y: node.getWorldPosition().y + this.pathfinder.getCellSize()/2,
                                 };
 
                                 ctx.translate(arrowPosition.x,arrowPosition.y);
