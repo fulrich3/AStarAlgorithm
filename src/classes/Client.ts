@@ -2,6 +2,8 @@ import Map from './Map';
 import Node from './Node';
 import HtmlButton from './client/HtmlButton';
 
+var functions = require('./functions');
+const imgArrow = require('../img/arrow.png');
 
 export default class Client{
     private map:Map;
@@ -54,7 +56,7 @@ export default class Client{
     public static readonly FONT:string = "Courrier New";
 
     // Node display mode
-    public static readonly NODE_DISPLAY_MODE:number = 1;
+    public static readonly NODE_DISPLAY_MODE:number = 2;
 
     constructor(map:Map,parentHtmlElement:HTMLElement){
         this.map = map;
@@ -84,11 +86,6 @@ export default class Client{
             this.mouseY = e.clientY - this.canvas.offsetTop;
 
             this.mouseMove();
-        });
-
-        // Listener for mouse click event
-        window.addEventListener("click", (e) => {
-            this.click();
         });
 
         // Listener for mouse mousedown event
@@ -122,7 +119,6 @@ export default class Client{
         new HtmlButton(client,"Reset grid",false,function(){
             this.map.setGoalNode(null);
             this.map.setStartNode(null);
-            //this.map.getPathList().length = 0;
 
             for(let y:number=0; y<this.map.height; y++){
                 for(let x:number=0; x<this.map.getWidth(); x++){
@@ -130,10 +126,36 @@ export default class Client{
                     currentNode.setWalkable(true);
                 }
             }
+
+            this.draw();
         }.bind(this));
 
         this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
             this.map.aStarExecuteNextStep();
+
+            // Draw every open & closed nodes
+            this.map.getOpenList().forEach(function(node:Node) {
+                this.drawNode(node);
+            }.bind(this));
+
+            this.map.getClosedList().forEach(function(node:Node,index:number) {
+                this.drawNode(node);
+            }.bind(this));
+
+        }.bind(this)));
+
+        this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
+            this.map.aStarExecuteNextStep();
+
+            // Draw every open & closed nodes
+            this.map.getOpenList().forEach(function(node:Node) {
+                this.drawNode(node);
+            }.bind(this));
+
+            this.map.getClosedList().forEach(function(node:Node,index:number) {
+                this.drawNode(node);
+            }.bind(this));
+
         }.bind(this)));
     }
 
@@ -171,6 +193,7 @@ export default class Client{
                 if(this.nodeFocused){
                     // We set it's hover attribute to false
                     this.nodeFocused.setHover(false);
+                    this.drawNode( this.nodeFocused );
                 }
 
                 // The node the client is focused is the hover node
@@ -178,6 +201,7 @@ export default class Client{
 
                 // We set the hover attribute of the hovered Node to true
                 this.nodeFocused.setHover(true);
+                this.drawNode( this.nodeFocused );
 
                 // Edit node if mouse down
                 if(this.mouseIsDown){
@@ -188,6 +212,7 @@ export default class Client{
         else{
             if(this.nodeFocused){
                 this.nodeFocused.setHover(false);
+                this.drawNode( this.nodeFocused );
                 this.nodeFocused = null;
             }
         }
@@ -204,27 +229,37 @@ export default class Client{
         this.editNode();
     }
 
-    // Will be executed on click
-    private click(){
-    }
-
     // Edit focused node
     private editNode(){
         if(this.nodeFocused){
             switch(this.editMode){
                 case Client.EDIT_MODE_EMPTY:
                     this.nodeFocused.setWalkable(true);
+
                     break;
                 case Client.EDIT_MODE_WALKABLE:
                     this.nodeFocused.setWalkable(false);
                     break;
                 case Client.EDIT_MODE_START:
+                    // We get the current position of the start node to erase it later
+                    let oldStartNode:Node = this.map.getNodeAtPosition(this.map.getStartNode().getGridPosition().x,this.map.getStartNode().getGridPosition().y);
+                    // We set the new start node
                     this.map.setStartNode(this.nodeFocused);
+                    // Erase old start node
+                    this.drawNode(oldStartNode);
                     break;
                 case Client.EDIT_MODE_GOAL:
+                    // We get the current position of the goal node to erase it later
+                    let oldGoalNode:Node = this.map.getNodeAtPosition(this.map.getGoalNode().getGridPosition().x,this.map.getGoalNode().getGridPosition().y);
+                    // We set the new goal node
                     this.map.setGoalNode(this.nodeFocused);
+                    // Erase old goal node
+                    this.drawNode(oldGoalNode);
                     break;
             }
+
+            // Draw focused node
+            this.drawNode(this.nodeFocused);
         }
     }
 
@@ -232,12 +267,175 @@ export default class Client{
         for(let y:number=0; y<this.map.getHeight(); y++){
             for(let x:number=0; x<this.map.getWidth(); x++){
                 let currentNode = this.map.getNodeAtPosition(x,y);
-                currentNode.draw();
+                this.drawNode(currentNode);
             }
         }
     }
 
-    public drawEmptyCanvas(){
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    public drawNode(node:Node){
+        if(this.map.getClient()){
+            let ctx = this.map.getClient().getCtx();
+
+            ctx.beginPath();
+            // Set draw area for the node
+            ctx.rect(node.getWorldPosition().x,node.getWorldPosition().y,this.map.getCellSize(),this.map.getCellSize());
+
+            // Set fill color
+            if(!node.getWalkable()){
+                // Unwalkable node
+                ctx.fillStyle = Client.colorFillSolid;
+            }else{
+                // Walkable node
+                
+                if(node.inPathList()){
+                    // Set color for closed node
+                    ctx.fillStyle = Client.colorFillPath;
+                }else if(node.isStartNode()){
+                    // Set color for start node
+                    ctx.fillStyle = Client.colorFillStart;
+                }else if(node.isGoalNode()){
+                    // Set color for goal node
+                    ctx.fillStyle = Client.colorFillGoal;
+                }else if(node.inOpenList()){
+                    // Set color for open node
+                    ctx.fillStyle = Client.colorFillOpen;
+                }else if(node.inClosedList()){
+                    // Set color for closed node
+                    ctx.fillStyle = Client.colorFillClosed;
+                }else{
+                    // Set color for normal node
+                    ctx.fillStyle = Client.colorFillNormal;
+                }
+                
+            }
+            ctx.fill();
+
+            // Stroke
+            if(!node.getHover()){
+                ctx.strokeStyle = Client.colorStroke;
+            }else{
+                ctx.strokeStyle = Client.colorStrokeHover;
+            }
+
+            // Draw stroke of node
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            //Draw text
+            ctx.fillStyle = Client.colorTextNormal;
+            ctx.textBaseline="middle";
+            ctx.textAlign="center";
+
+            if(node.isStartNode() || node.isGoalNode()){
+                ctx.font = "13px " + Client.FONT;
+                if(node.isStartNode()){
+                    ctx.fillText("Start" , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
+                }else if(node.isGoalNode()){
+                    ctx.fillText("Goal" , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
+                }
+            }else{
+                switch(Client.NODE_DISPLAY_MODE){
+                    case 0 :
+                        if(node.inOpenList() || node.inClosedList()){
+                            ctx.font = "16px " + Client.FONT;
+                            // Display FCost
+                            if(node.getFCost())
+                                ctx.fillText((node.getFCost()).toString() , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
+        
+                            ctx.font = "10px " + Client.FONT;
+                            // Display GCost
+                            if(node.getGCost())
+                                ctx.fillText( (node.getGCost()).toString() , node.getWorldPosition().x + 8 , node.getWorldPosition().y + 8);
+        
+                            // Display HCost
+                            if(node.getHCost()){
+                                ctx.fillText( (node.getHCost()).toString() , node.getWorldPosition().x + this.map.getCellSize() - 8 , node.getWorldPosition().y + 4);
+
+                                let drawAngle:number = functions.pointAngleRad(node.getGridPosition(),node.getPreviousNeighbour().getGridPosition());
+                                
+                                let arrowPosition = {
+                                    x: node.getWorldPosition().x + this.map.getCellSize()/2,
+                                    y: node.getWorldPosition().y + this.map.getCellSize()/2,
+                                };
+
+                                ctx.translate(arrowPosition.x,arrowPosition.y);
+                                ctx.rotate(drawAngle);
+                                ctx.translate(-arrowPosition.x,-arrowPosition.y);
+
+                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.height/2);
+                                
+                                ctx.restore();
+                            }
+                        }
+                        break;
+                    case 1 :
+                        ctx.font = "10px " + Client.FONT;
+
+                        // Display FCost
+                        if(node.getFCost()){
+                            ctx.fillText((node.getFCost()).toString() , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + 8);
+
+                            // Display image
+                            var img = new Image();
+                            img.onload = function() {
+                                ctx.save();
+
+                                let drawAngle:number = functions.pointAngleRad(node.getGridPosition(),node.getParent().getGridPosition());
+                                
+                                let arrowPosition = {
+                                    x: node.getWorldPosition().x + this.map.getCellSize()/2,
+                                    y: node.getWorldPosition().y + this.map.getCellSize()/2,
+                                };
+
+                                ctx.translate(arrowPosition.x,arrowPosition.y);
+                                ctx.rotate(drawAngle);
+                                ctx.translate(-arrowPosition.x,-arrowPosition.y);
+
+                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.height/2);
+                                
+                                ctx.restore();
+                            }.bind(this);
+                            img.src = imgArrow;
+
+                            // Display GCost
+                            if(node.getGCost())
+                                ctx.fillText( (node.getGCost()).toString() , node.getWorldPosition().x + 8 , node.getWorldPosition().y + this.map.getCellSize()-8 );
+
+                            // Display HCost
+                            if(node.getHCost())
+                                ctx.fillText( (node.getHCost()).toString() , node.getWorldPosition().x + this.map.getCellSize() - 8 , node.getWorldPosition().y + this.map.getCellSize()-8 );
+                            }
+                        break;
+                    case 2 :
+                        // Display arrow
+                        if(node.getParent()){
+                            var img = new Image();
+                            img.onload = function() {
+                                ctx.save();
+
+                                let drawAngle:number = functions.pointAngleRad(node.getGridPosition(),node.getParent().getGridPosition());
+                                
+                                let arrowPosition = {
+                                    x: node.getWorldPosition().x + this.map.getCellSize()/2,
+                                    y: node.getWorldPosition().y + this.map.getCellSize()/2,
+                                };
+
+                                ctx.translate(arrowPosition.x,arrowPosition.y);
+                                ctx.rotate(drawAngle);
+                                ctx.translate(-arrowPosition.x,-arrowPosition.y);
+
+                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.height/2);
+                                
+                                ctx.restore();
+                            }.bind(this);
+
+                            img.src = imgArrow;
+                        }
+                    break;
+                }
+            }
+
+            ctx.closePath();
+        }
     }
 }

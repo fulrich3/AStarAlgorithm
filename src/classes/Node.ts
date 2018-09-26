@@ -1,9 +1,6 @@
 import Map from './Map';
 import Client from './Client';
 
-var functions = require('./functions');
-const imageSrc = require('../img/arrow.png');
-
 export default class Node {
     private map:Map; // Reference to the parent map
     private gridPosition = { // Position in the grid
@@ -159,7 +156,6 @@ export default class Node {
 
         if(value == !this.getWalkable()){
             this.walkable = value;
-            this.draw();
         }
     }
 
@@ -167,7 +163,6 @@ export default class Node {
         // We set it only if it's different from the current one
         if(value == !this.getHover()){
             this.hover = value;
-            this.draw();
         }
     }
 
@@ -194,148 +189,5 @@ export default class Node {
 
     public inPathList(){
         return this.map.getPathList().includes(this);
-    }
-
-    public draw(){
-        if(this.map.getClient()){
-            let ctx = this.map.getClient().getCtx();
-
-            ctx.beginPath();
-            // Set draw area for the node
-            ctx.rect(this.getWorldPosition().x,this.getWorldPosition().y,this.map.getCellSize(),this.map.getCellSize());
-
-            // Set fill color
-            if(!this.getWalkable()){
-                // Unwalkable node
-                ctx.fillStyle = Client.colorFillSolid;
-            }else{
-                // Walkable node
-                
-                if(this.isStartNode()){
-                    // Set color for start node
-                    ctx.fillStyle = Client.colorFillStart;
-                }else if(this.isGoalNode()){
-                    // Set color for goal node
-                    ctx.fillStyle = Client.colorFillGoal;
-                }else if(this.inPathList()){
-                    // Set color for closed node
-                    ctx.fillStyle = Client.colorFillPath;
-                }else if(this.inOpenList()){
-                    // Set color for open node
-                    ctx.fillStyle = Client.colorFillOpen;
-                }else if(this.inClosedList()){
-                    // Set color for closed node
-                    ctx.fillStyle = Client.colorFillClosed;
-                }else{
-                    // Set color for normal node
-                    ctx.fillStyle = Client.colorFillNormal;
-                }
-                
-            }
-            ctx.fill();
-
-            // Stroke
-            if(!this.getHover()){
-                ctx.strokeStyle = Client.colorStroke;
-            }else{
-                ctx.strokeStyle = Client.colorStrokeHover;
-            }
-
-            // Draw stroke of node
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            //Draw text
-            ctx.fillStyle = Client.colorTextNormal;
-            ctx.textBaseline="middle";
-            ctx.textAlign="center";
-
-            if(this.isStartNode() || this.isGoalNode()){
-                ctx.font = "13px " + Client.FONT;
-                if(this.isStartNode()){
-                    ctx.fillText("Start" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
-                }else if(this.isGoalNode()){
-                    ctx.fillText("Goal" , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
-                }
-            }else{
-                switch(Client.NODE_DISPLAY_MODE){
-                    case 0 :
-                        if(this.inOpenList() || this.inClosedList()){
-                            ctx.font = "16px " + Client.FONT;
-                            // Display FCost
-                            if(this.getFCost())
-                                ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + this.map.getCellSize()/2);
-        
-                            ctx.font = "10px " + Client.FONT;
-                            // Display GCost
-                            if(this.getGCost())
-                                ctx.fillText( (this.getGCost()).toString() , this.getWorldPosition().x + 8 , this.getWorldPosition().y + 8);
-        
-                            // Display HCost
-                            if(this.getHCost()){
-                                ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + 4);
-
-                                let drawAngle:number = functions.pointAngleRad(this.getGridPosition(),this.getPreviousNeighbour().getGridPosition());
-                                
-                                let arrowPosition = {
-                                    x: this.getWorldPosition().x + this.map.getCellSize()/2,
-                                    y: this.getWorldPosition().y + this.map.getCellSize()/2,
-                                };
-
-                                ctx.translate(arrowPosition.x,arrowPosition.y);
-                                ctx.rotate(drawAngle);
-                                ctx.translate(-arrowPosition.x,-arrowPosition.y);
-
-                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.height/2);
-                                
-                                ctx.restore();
-                            }
-                        }
-                        break;
-                    case 1 :
-                        ctx.font = "10px " + Client.FONT;
-
-                        // Display FCost
-                        if(this.getFCost()){
-                            ctx.fillText((this.getFCost()).toString() , this.getWorldPosition().x + this.map.getCellSize()/2 , this.getWorldPosition().y + 8);
-
-                            let neighbourWithLowestFCost:Node = this.getPreviousNeighbour();
-
-                            // Display image
-                            var img = new Image();
-                            img.onload = function() {
-                                ctx.save();
-
-                                let drawAngle:number = functions.pointAngleRad(this.getGridPosition(),this.getParent().getGridPosition());
-                                
-                                let arrowPosition = {
-                                    x: this.getWorldPosition().x + this.map.getCellSize()/2,
-                                    y: this.getWorldPosition().y + this.map.getCellSize()/2,
-                                };
-
-                                ctx.translate(arrowPosition.x,arrowPosition.y);
-                                ctx.rotate(drawAngle);
-                                ctx.translate(-arrowPosition.x,-arrowPosition.y);
-
-                                ctx.drawImage(img, arrowPosition.x - img.width/2 , arrowPosition.y - img.height/2);
-                                
-                                ctx.restore();
-                            }.bind(this);
-                            img.src = imageSrc;
-
-                            // Display GCost
-                            if(this.getGCost())
-                                ctx.fillText( (this.getGCost()).toString() , this.getWorldPosition().x + 8 , this.getWorldPosition().y + this.map.getCellSize()-8 );
-
-                            // Display HCost
-                            if(this.getHCost())
-                                ctx.fillText( (this.getHCost()).toString() , this.getWorldPosition().x + this.map.getCellSize() - 8 , this.getWorldPosition().y + this.map.getCellSize()-8 );
-                            }
-                        break;
-                }
-            }
-
-            ctx.closePath();
-        }
     }
 }

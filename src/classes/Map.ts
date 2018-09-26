@@ -104,44 +104,31 @@ export default class Map {
         this.openList.length = 0;
         this.closedList.length = 0;
 
-        // If the passed node is declared but isn't walkable or is the goal node, the method is canceled
+        // If the passed node is declared but isn't walkable or is the goal node
         if(node && (!node.getWalkable() || node===this.goalNode))
             return;
 
-        // If the passed node is null, we set the start node at null and we draw it.
+        // If the passed node is null, we set the start node to null
         if(!node){
             this.startNode = null;
-            this.client.draw();
-        }
-        // If the passed node is valid, we draw an empty node in place of the old node and place and draw the new node
-        else{
-            let oldNode = this.startNode;
+        }else{
+             // If the passed node is valid, we place the new node
             this.startNode = node;
-
-            if(oldNode){
-                oldNode.draw();
-            }
-
             this.addNodeToOpenList(this.startNode);
-            this.startNode.draw();
         }
     }
 
     public setGoalNode(node:Node){
+        // If the passed node is declared but isn't walkable or is the start node
         if(node && (!node.getWalkable() || node===this.startNode))
             return;
 
+        // If the passed node is null, we set the goal node to null
         if(!node){
             this.goalNode = null;
-            this.client.draw();
-            return;
         }else{
-            let oldNode = this.goalNode;
+            // If the passed node is valid, we place the new node
             this.goalNode = node;
-            if(oldNode){
-                oldNode.draw();
-            }
-            this.goalNode.draw();
         }
     }
 
@@ -176,7 +163,6 @@ export default class Map {
     public moveNodeFromOpenToClosedList(node:Node){
         this.deleteNodeFromOpenList(node);
         this.addNodeToClosedList(node);
-        node.draw();
     }
 
     /*
@@ -283,26 +269,15 @@ export default class Map {
                         this.addNodeToOpenList(neighbour);
                 }
             }
-
-            // Draw every open & closed nodes
-            this.getOpenList().forEach(function(node) {
-                node.draw();
-            });
-
-            this.getClosedList().forEach(function(node:Node,index:number) {
-                node.draw();
-            }.bind(this));
         }
         
         // If goal is found, we trace the path until we find the start node
-        
         else if(!this.pathList.includes(this.startNode)){
             if(this.pathList.length==0){
                 this.pathList.push(this.goalNode);
             }else{
                 var nodeAtTopOfStack:Node = this.pathList[this.pathList.length-1];
-                this.pathList.push( nodeAtTopOfStack.getParent() );
-                nodeAtTopOfStack.draw();
+                this.pathList.push( nodeAtTopOfStack.getParent());
             }
         }
         
