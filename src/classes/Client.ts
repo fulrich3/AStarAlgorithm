@@ -130,32 +130,18 @@ export default class Client{
             this.draw();
         }.bind(this));
 
-        this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
-            this.map.aStarExecuteNextStep();
-
-            // Draw every open & closed nodes
-            this.map.getOpenList().forEach(function(node:Node) {
-                this.drawNode(node);
-            }.bind(this));
-
-            this.map.getClosedList().forEach(function(node:Node,index:number) {
-                this.drawNode(node);
-            }.bind(this));
-
+        this.inputElementsList.push(new HtmlButton(client,"Execute",false,function(){
+            while(!this.map.isPathFound() && this.map.openList.length > 0){
+                this.map.aStarExecuteNextStep();
+            }
+            this.drawOpenAndClosedList();
         }.bind(this)));
 
         this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
             this.map.aStarExecuteNextStep();
 
             // Draw every open & closed nodes
-            this.map.getOpenList().forEach(function(node:Node) {
-                this.drawNode(node);
-            }.bind(this));
-
-            this.map.getClosedList().forEach(function(node:Node,index:number) {
-                this.drawNode(node);
-            }.bind(this));
-
+            this.drawOpenAndClosedList();
         }.bind(this)));
     }
 
@@ -184,7 +170,6 @@ export default class Client{
         // If the cursor is inside the canvas area
         if(!this.cursorOutOfBounds){
             // We set the hovered node
-            //let hoveredNode = this.map.grid[Math.floor(this.mouseY/this.map.getCellSize())][Math.floor(this.mouseX/this.map.getCellSize())];
             let hoveredNode = this.map.getNodeAtPosition(Math.floor(this.mouseX/this.map.getCellSize()),Math.floor(this.mouseY/this.map.getCellSize()));
 
             // If the hovered node isn't the focused one, we don't do anything
@@ -261,6 +246,17 @@ export default class Client{
             // Draw focused node
             this.drawNode(this.nodeFocused);
         }
+    }
+
+    // Draw every open & closed nodes
+    public drawOpenAndClosedList(){
+        this.map.getOpenList().forEach(function(node:Node) {
+            this.drawNode(node);
+        }.bind(this));
+
+        this.map.getClosedList().forEach(function(node:Node,index:number) {
+            this.drawNode(node);
+        }.bind(this));
     }
 
     public draw(){

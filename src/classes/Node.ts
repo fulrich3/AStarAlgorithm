@@ -25,23 +25,6 @@ export default class Node {
 
     // Accessors
     public getGCost(){
-        /*
-        var closedNodeWithLowestFCost:Node = null;
-
-
-        this.map.getClosedList().forEach((currentNode,index) => {
-            if(index==0 || currentNode.getFCost()<closedNodeWithLowestFCost.getFCost()){
-                closedNodeWithLowestFCost = currentNode;
-            }
-        });
-        */
-
-        /*
-        if(this.map.getStartNode() && this.map.getGoalNode()){
-            result = Math.floor( functions.pointDistance(this.getGridPosition(),this.map.getStartNode().getGridPosition())*10);
-        }
-        */
-
         return this.gCost;
     }
 

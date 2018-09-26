@@ -99,6 +99,10 @@ export default class Map {
         return this.pathList;
     }
 
+    public isPathFound(){
+        return this.getStartNode() === this.getPathList()[this.getPathList().length-1]
+    }
+
     // Mutators
     public setStartNode(node:Node){
         this.openList.length = 0;
