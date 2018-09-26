@@ -1,8 +1,7 @@
-import Map from './Map';
-import Client from './Client';
+import Pathfinder from './Pathfinder';
 
 export default class Node {
-    private map:Map; // Reference to the parent map
+    private pathfinder:Pathfinder; // Reference to the parent map
     private gridPosition = { // Position in the grid
         x:0,
         y:0,
@@ -12,8 +11,8 @@ export default class Node {
     private gCost:number = 0;
     private parent:Node = null;
 
-    constructor(map:Map,x:number,y:number,walkable:boolean){
-        this.map = map;
+    constructor(pathfinder:Pathfinder,x:number,y:number,walkable:boolean){
+        this.pathfinder = pathfinder;
         this.gridPosition.x = x;
         this.gridPosition.y = y;
         this.walkable = walkable;
@@ -32,8 +31,8 @@ export default class Node {
         if(this.inClosedList() || this.inOpenList()){
             var result:number = null;
 
-            if(this.map.getStartNode() && this.map.getGoalNode()){
-                result = this.getDistanceToNode(this.map.getGoalNode());
+            if(this.pathfinder.getStartNode() && this.pathfinder.getGoalNode()){
+                result = this.getDistanceToNode(this.pathfinder.getGoalNode());
             }
 
             return result;
@@ -66,8 +65,8 @@ export default class Node {
 
     public getWorldPosition(){
         return {
-            x: this.gridPosition.x * this.map.getCellSize(),
-            y: this.gridPosition.y * this.map.getCellSize(),
+            x: this.gridPosition.x * this.pathfinder.getCellSize(),
+            y: this.gridPosition.y * this.pathfinder.getCellSize(),
         }
     }
 
@@ -77,10 +76,10 @@ export default class Node {
         for(let y = this.getGridPosition().y-1 ; y<this.getGridPosition().y+2 ; y++){
             for(let x= this.getGridPosition().x-1; x<this.getGridPosition().x+2 ; x++){
             // We don't want to check the current node + If x or y is out of bounds + the node needs to be in the closed list + it needs to be walkable
-                if(x<0 || y<0 || x>this.map.getWidth()-1 || y>this.map.getHeight()-1)
+                if(x<0 || y<0 || x>this.pathfinder.getWidth()-1 || y>this.pathfinder.getHeight()-1)
                     continue;
 
-                let currentNode = this.map.getNodeAtPosition(x,y);
+                let currentNode = this.pathfinder.getNodeAtPosition(x,y);
 
                 if (this===currentNode)
                     continue;
@@ -105,10 +104,10 @@ export default class Node {
                 continue;
 
             // Get best neighbour
-            if(!neighbourNode || (currentNode===this.map.getStartNode() || neighbourNode.getFCost() < currentNode.getFCost() )){
+            if(!neighbourNode || (currentNode===this.pathfinder.getStartNode() || neighbourNode.getFCost() < currentNode.getFCost() )){
                 neighbourNode = currentNode;
 
-                if(neighbourNode===this.map.getStartNode()){
+                if(neighbourNode===this.pathfinder.getStartNode()){
                     break;
                 }
             }
@@ -155,22 +154,22 @@ export default class Node {
 
     // Other
     public isStartNode(){
-        return this === this.map.getStartNode();
+        return this === this.pathfinder.getStartNode();
     }
 
     public isGoalNode(){
-        return this === this.map.getGoalNode();
+        return this === this.pathfinder.getGoalNode();
     }
 
     public inOpenList(){
-        return this.map.getOpenList().includes(this);
+        return this.pathfinder.getOpenList().includes(this);
     }
 
     public inClosedList(){
-        return this.map.getClosedList().includes(this);
+        return this.pathfinder.getClosedList().includes(this);
     }
 
     public inPathList(){
-        return this.map.getPathList().includes(this);
+        return this.pathfinder.getPathList().includes(this);
     }
 }

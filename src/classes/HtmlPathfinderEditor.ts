@@ -1,12 +1,12 @@
-import Map from './Map';
+import Pathfinder from './Pathfinder';
 import Node from './Node';
 import HtmlButton from './client/HtmlButton';
 
 var functions = require('./functions');
 const imgArrow = require('../img/arrow.png');
 
-export default class Client{
-    private map:Map;
+export default class HtmlPathfinderEditor{
+    private map:Pathfinder;
     private mouseX:number = 0;
     private mouseY:number = 0;
     private nodeFocused:Node;
@@ -58,7 +58,7 @@ export default class Client{
     // Node display mode
     public static readonly NODE_DISPLAY_MODE:number = 2;
 
-    constructor(map:Map,parentHtmlElement:HTMLElement){
+    constructor(map:Pathfinder,parentHtmlElement:HTMLElement){
         this.map = map;
 
         // Create canvas element
@@ -75,7 +75,7 @@ export default class Client{
     }
 
     init(){
-        let client = this;
+        let htmlPathfinderEditor = this;
 
         // Append canvas to the selected HTML element
         this.parentHtmlElement.appendChild(this.canvas);
@@ -99,24 +99,24 @@ export default class Client{
         });
 
         // Append editor buttons
-        this.inputElementsList.push(new HtmlButton(client,"Delete walls",true,function(){
-            this.editMode = Client.EDIT_MODE_EMPTY;
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Delete walls",true,function(){
+            this.editMode = HtmlPathfinderEditor.EDIT_MODE_EMPTY;
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(client,"Add walls",true,function(){
-            this.editMode = Client.EDIT_MODE_WALKABLE;
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Add walls",true,function(){
+            this.editMode = HtmlPathfinderEditor.EDIT_MODE_WALKABLE;
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(client,"Add start node",true,function(){
-            this.editMode = Client.EDIT_MODE_START;
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Add start node",true,function(){
+            this.editMode = HtmlPathfinderEditor.EDIT_MODE_START;
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(client,"Add goal node",true,function(){
-            this.editMode = Client.EDIT_MODE_GOAL;
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Add goal node",true,function(){
+            this.editMode = HtmlPathfinderEditor.EDIT_MODE_GOAL;
         }.bind(this)));
 
         // Reset grid button
-        new HtmlButton(client,"Reset grid",false,function(){
+        new HtmlButton(htmlPathfinderEditor,"Reset grid",false,function(){
             this.map.setGoalNode(null);
             this.map.setStartNode(null);
 
@@ -130,14 +130,14 @@ export default class Client{
             this.draw();
         }.bind(this));
 
-        this.inputElementsList.push(new HtmlButton(client,"Execute",false,function(){
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Execute",false,function(){
             while(!this.map.isPathFound() && this.map.openList.length > 0){
                 this.map.aStarExecuteNextStep();
             }
             this.drawOpenAndClosedList();
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(client,"Next step",false,function(){
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Next step",false,function(){
             this.map.aStarExecuteNextStep();
 
             // Draw every open & closed nodes
@@ -181,7 +181,7 @@ export default class Client{
                     this.drawNode( this.nodeFocused );
                 }
 
-                // The node the client is focused is the hover node
+                // The node the htmlPathfinderEditor is focused is the hover node
                 this.nodeFocused = hoveredNode;
 
                 // We set the hover attribute of the hovered Node to true
@@ -218,14 +218,14 @@ export default class Client{
     private editNode(){
         if(this.nodeFocused){
             switch(this.editMode){
-                case Client.EDIT_MODE_EMPTY:
+                case HtmlPathfinderEditor.EDIT_MODE_EMPTY:
                     this.nodeFocused.setWalkable(true);
 
                     break;
-                case Client.EDIT_MODE_WALKABLE:
+                case HtmlPathfinderEditor.EDIT_MODE_WALKABLE:
                     this.nodeFocused.setWalkable(false);
                     break;
-                case Client.EDIT_MODE_START:
+                case HtmlPathfinderEditor.EDIT_MODE_START:
                     // We get the current position of the start node to erase it later
                     let oldStartNode:Node = this.map.getNodeAtPosition(this.map.getStartNode().getGridPosition().x,this.map.getStartNode().getGridPosition().y);
                     // We set the new start node
@@ -233,7 +233,7 @@ export default class Client{
                     // Erase old start node
                     this.drawNode(oldStartNode);
                     break;
-                case Client.EDIT_MODE_GOAL:
+                case HtmlPathfinderEditor.EDIT_MODE_GOAL:
                     // We get the current position of the goal node to erase it later
                     let oldGoalNode:Node = this.map.getNodeAtPosition(this.map.getGoalNode().getGridPosition().x,this.map.getGoalNode().getGridPosition().y);
                     // We set the new goal node
@@ -279,28 +279,28 @@ export default class Client{
             // Set fill color
             if(!node.getWalkable()){
                 // Unwalkable node
-                ctx.fillStyle = Client.colorFillSolid;
+                ctx.fillStyle = HtmlPathfinderEditor.colorFillSolid;
             }else{
                 // Walkable node
                 
                 if(node.inPathList()){
                     // Set color for closed node
-                    ctx.fillStyle = Client.colorFillPath;
+                    ctx.fillStyle = HtmlPathfinderEditor.colorFillPath;
                 }else if(node.isStartNode()){
                     // Set color for start node
-                    ctx.fillStyle = Client.colorFillStart;
+                    ctx.fillStyle = HtmlPathfinderEditor.colorFillStart;
                 }else if(node.isGoalNode()){
                     // Set color for goal node
-                    ctx.fillStyle = Client.colorFillGoal;
+                    ctx.fillStyle = HtmlPathfinderEditor.colorFillGoal;
                 }else if(node.inOpenList()){
                     // Set color for open node
-                    ctx.fillStyle = Client.colorFillOpen;
+                    ctx.fillStyle = HtmlPathfinderEditor.colorFillOpen;
                 }else if(node.inClosedList()){
                     // Set color for closed node
-                    ctx.fillStyle = Client.colorFillClosed;
+                    ctx.fillStyle = HtmlPathfinderEditor.colorFillClosed;
                 }else{
                     // Set color for normal node
-                    ctx.fillStyle = Client.colorFillNormal;
+                    ctx.fillStyle = HtmlPathfinderEditor.colorFillNormal;
                 }
                 
             }
@@ -308,9 +308,9 @@ export default class Client{
 
             // Stroke
             if(!node.getHover()){
-                ctx.strokeStyle = Client.colorStroke;
+                ctx.strokeStyle = HtmlPathfinderEditor.colorStroke;
             }else{
-                ctx.strokeStyle = Client.colorStrokeHover;
+                ctx.strokeStyle = HtmlPathfinderEditor.colorStrokeHover;
             }
 
             // Draw stroke of node
@@ -318,27 +318,27 @@ export default class Client{
             ctx.stroke();
 
             //Draw text
-            ctx.fillStyle = Client.colorTextNormal;
+            ctx.fillStyle = HtmlPathfinderEditor.colorTextNormal;
             ctx.textBaseline="middle";
             ctx.textAlign="center";
 
             if(node.isStartNode() || node.isGoalNode()){
-                ctx.font = "13px " + Client.FONT;
+                ctx.font = "13px " + HtmlPathfinderEditor.FONT;
                 if(node.isStartNode()){
                     ctx.fillText("Start" , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
                 }else if(node.isGoalNode()){
                     ctx.fillText("Goal" , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
                 }
             }else{
-                switch(Client.NODE_DISPLAY_MODE){
+                switch(HtmlPathfinderEditor.NODE_DISPLAY_MODE){
                     case 0 :
                         if(node.inOpenList() || node.inClosedList()){
-                            ctx.font = "16px " + Client.FONT;
+                            ctx.font = "16px " + HtmlPathfinderEditor.FONT;
                             // Display FCost
                             if(node.getFCost())
                                 ctx.fillText((node.getFCost()).toString() , node.getWorldPosition().x + this.map.getCellSize()/2 , node.getWorldPosition().y + this.map.getCellSize()/2);
         
-                            ctx.font = "10px " + Client.FONT;
+                            ctx.font = "10px " + HtmlPathfinderEditor.FONT;
                             // Display GCost
                             if(node.getGCost())
                                 ctx.fillText( (node.getGCost()).toString() , node.getWorldPosition().x + 8 , node.getWorldPosition().y + 8);
@@ -365,7 +365,7 @@ export default class Client{
                         }
                         break;
                     case 1 :
-                        ctx.font = "10px " + Client.FONT;
+                        ctx.font = "10px " + HtmlPathfinderEditor.FONT;
 
                         // Display FCost
                         if(node.getFCost()){

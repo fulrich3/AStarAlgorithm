@@ -1,5 +1,5 @@
 import Node from './Node';
-import Client from './Client';
+import HtmlPathfinderEditor from './HtmlPathfinderEditor';
 
 var functions = require('./functions');
 
@@ -11,9 +11,9 @@ interface mapConfigInterface {
     }
 }
 
-export default class Map {
+export default class Pathfinder {
     private grid:Node[][] = [];
-    private client:Client;
+    private htmlPathfinderEditor:HtmlPathfinderEditor;
     private width: number = 20;
     private height: number = 20;
     private cellSize: number = 20;
@@ -49,8 +49,8 @@ export default class Map {
         for(let y:number=0; y<this.height; y++){
             for(let x:number=0; x<this.width; x++){
                 let walkable = true;
-                let map = this;
-                this.grid[y][x] = new Node(map,x,y,walkable);
+                let htmlPathfinderEditor = this;
+                this.grid[y][x] = new Node(htmlPathfinderEditor,x,y,walkable);
             }
         }
 
@@ -64,7 +64,7 @@ export default class Map {
     }
 
     public getClient(){
-        return this.client;
+        return this.htmlPathfinderEditor;
     }
 
     public getWidth(){
@@ -137,9 +137,9 @@ export default class Map {
     }
 
     public appendHtmlEditorToElement(element:HTMLElement){
-        // Set client
-        this.client = new Client(this,element);
-        this.client.draw();
+        // Set htmlPathfinderEditor
+        this.htmlPathfinderEditor = new HtmlPathfinderEditor(this,element);
+        this.htmlPathfinderEditor.draw();
     }
 
     public addNodeToOpenList(node:Node){

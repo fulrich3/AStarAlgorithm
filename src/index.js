@@ -1,19 +1,19 @@
 import './style.scss';
 
-import Map from './classes/Map';
+import Pathfinder from './classes/Pathfinder';
 
 var mapConfig = {
-    width: 20,
-    height: 20,
+    width: 40,
+    height: 40,
     draw: true,
     drawOptions: {
-        cellSize: 40,
+        cellSize: 20,
     }
 }
 
 function init(){
-    var map = new Map(mapConfig);
-    map.appendHtmlEditorToElement(document.body);
+    var pathfinder = new Pathfinder(mapConfig);
+    pathfinder.appendHtmlEditorToElement(document.body);
 }
 
 document.addEventListener("DOMContentLoaded", init, false);
