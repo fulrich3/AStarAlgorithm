@@ -4,31 +4,24 @@ import Pathfinder from './classes/Pathfinder';
 import HtmlPathfinderEditor from './classes/HtmlPathfinderEditor';
 
 var pathfinderConfig = {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     draw: true,
     drawOptions: {
-        cellSize: 20,
-    }
-}
-
-var startPoint = {
-    x: 4,
-    y: 4,
-}
-
-var goalPoint = {
-    x: pathfinderConfig.width-5,
-    y: pathfinderConfig.width-5,
+        cellSize: 25,
+    },
+    startNodePosition: {
+        x:4,
+        y:4,
+    },
+    goalNodePosition: {
+        x: 25,
+        y: 25,
+    },
 }
 
 function init(){
     var pathfinder = new Pathfinder(pathfinderConfig);
-    pathfinder.setStartPoint(startPoint);
-    pathfinder.setGoalPoint(goalPoint);
-
-    //var path = pathfinder.getPath();
-
     new HtmlPathfinderEditor(pathfinder,document.body);
 }
 

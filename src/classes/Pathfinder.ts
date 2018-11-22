@@ -1,14 +1,14 @@
 import Node from './Node';
 import HtmlPathfinderEditor from './HtmlPathfinderEditor';
 
-var functions = require('./functions');
-
 interface mapConfigInterface {
     width:number,
     height:number,
     drawOptions: {
         cellSize: number,
     }
+    startNodePosition:any;
+    goalNodePosition:any;
 }
 
 export default class Pathfinder {
@@ -20,6 +20,16 @@ export default class Pathfinder {
 
     private startNode:Node;
     private goalNode:Node;
+
+    private startNodeDefaultPosition = {
+        x:4,
+        y:4,
+    }
+
+    private goalNodeDefaultPosition = {
+        x: this.width-5,
+        y: this.height-5,
+    }
 
     private closedList:Array<Node> = [];
     private openList:Array<Node> = [];
@@ -40,10 +50,21 @@ export default class Pathfinder {
             }
         }
 
+        this.startNodeDefaultPosition = config.startNodePosition;
+        this.goalNodeDefaultPosition = config.goalNodePosition;
+
         // Set array size
         for(let y:number=0; y<this.height; y++){
             this.grid.push([]);
         }
+
+        this.init();
+    }
+
+    public init(){
+        this.closedList = [];
+        this.openList = [];
+        this.pathList = [];
 
         // Add nodes to grid
         for(let y:number=0; y<this.height; y++){
@@ -52,10 +73,18 @@ export default class Pathfinder {
                 let htmlPathfinderEditor = this;
                 this.grid[y][x] = new Node(htmlPathfinderEditor,x,y,walkable);
             }
-        }
+        };
 
-        this.setStartNode(this.getNodeAtPosition(5,10));
-        this.setGoalNode(this.getNodeAtPosition(15,10));
+
+        this.setGoalNode( this.getNodeAtPosition(
+            this.startNodeDefaultPosition.x,
+            this.startNodeDefaultPosition.y
+        ));
+
+        this.setStartNode( this.getNodeAtPosition(
+            this.goalNodeDefaultPosition.x,
+            this.goalNodeDefaultPosition.y
+        ));
     }
 
     // Accessors
@@ -203,12 +232,10 @@ export default class Pathfinder {
         // If goal is not found, we try to find it first....
         if(!this.getClosedList().includes(this.getGoalNode())){
             if(!this.startNode || !this.goalNode){
-                console.log("No start or goal node!");
                 return;
             }
 
             if(this.openList.length==0){
-                console.log("No more paths to explore...");
                 return;
             }
 
@@ -223,11 +250,6 @@ export default class Pathfinder {
             // We move the current node to the closed list
             this.moveNodeFromOpenToClosedList(currentNode);
 
-            // Check if current node is the goal node.
-            if(currentNode === this.getGoalNode()){
-                console.log("Path found!!");
-            }
-
             // Get every neighbours of the current node and loop through them
             let neighbours = currentNode.getNeighbours();
 
@@ -238,7 +260,6 @@ export default class Pathfinder {
                 if(neighbour.inClosedList() || neighbour.getWalkable()==false)
                     continue;
 
-                //console.log( neighbour.getGCost() );
                 var xx:number = currentNode.getGridPosition().x - neighbour.getGridPosition().x;
                 var yy:number = currentNode.getGridPosition().y - neighbour.getGridPosition().y;
 
@@ -307,11 +328,6 @@ export default class Pathfinder {
             }else{  
                 var nodeAtTopOfStack:Node = this.pathList[this.pathList.length-1];
                 this.pathList.push( nodeAtTopOfStack.getParent());
-
-                /*
-                var nodeAtTopOfStack:Node = this.pathList[0];
-                this.pathList.unshift( nodeAtTopOfStack.getParent());
-                */
             }
         }
     }

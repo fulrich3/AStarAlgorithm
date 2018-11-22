@@ -101,47 +101,38 @@ export default class HtmlPathfinderEditor{
         });
 
         // Append editor buttons
-        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Delete walls",true,function(){
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Supprimer solide",true,function(){
             this.editMode = HtmlPathfinderEditor.EDIT_MODE_EMPTY;
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Add walls",true,function(){
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Ajouter solide",true,function(){
             this.editMode = HtmlPathfinderEditor.EDIT_MODE_WALKABLE;
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Add start node",true,function(){
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Ajouter case de départ",true,function(){
             this.editMode = HtmlPathfinderEditor.EDIT_MODE_START;
         }.bind(this)));
 
-        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Add goal node",true,function(){
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Ajouter case d'arrivée",true,function(){
             this.editMode = HtmlPathfinderEditor.EDIT_MODE_GOAL;
         }.bind(this)));
 
-        // Reset grid button
-        new HtmlButton(htmlPathfinderEditor,"Reset grid",false,function(){
-            this.pathfinder.setGoalNode(null);
-            this.pathfinder.setStartNode(null);
-
-            for(let y:number=0; y<this.pathfinder.height; y++){
-                for(let x:number=0; x<this.pathfinder.getWidth(); x++){
-                    let currentNode = this.pathfinder.grid[y][x];
-                    currentNode.setWalkable(true);
-                }
-            }
-
-            this.draw();
-        }.bind(this));
-
-        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Execute",false,function(){
-            this.pathfinder.getPath();
-            this.drawOpenAndClosedList();
-        }.bind(this)));
-
-        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Next step",false,function(){
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Prochaine itération",false,function(){
             this.pathfinder.aStarExecuteNextStep();
             // Draw every open & closed nodes
             this.drawOpenAndClosedList();
         }.bind(this)));
+
+        this.inputElementsList.push(new HtmlButton(htmlPathfinderEditor,"Trouver le chemin",false,function(){
+            this.pathfinder.getPath();
+            this.drawOpenAndClosedList();
+        }.bind(this)));
+        
+        // Reset grid button
+        new HtmlButton(htmlPathfinderEditor,"Reset",false,function(){
+            this.pathfinder.init();
+            this.draw();
+        }.bind(this));
     }
 
     // Accessors
